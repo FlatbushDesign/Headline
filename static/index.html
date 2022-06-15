@@ -5,11 +5,32 @@
   <meta http-equiv='X-UA-Compatible' content='IE=edge'>
   <title>Page Title</title>
   <meta name='viewport' content='width=device-width, initial-scale=1'>
-  <link rel='stylesheet' type='text/css' media='screen' href='main.css'>
+  <script src="//unpkg.com/alpinejs" defer></script>
+  <link rel="stylesheet" href="https://unpkg.com/bamboo.css">
   <script src='main.js'></script>
 </head>
 <body>
-  <a href="/oauth2/authorize/zoom">Zoom</a>
-  <button onclick="fetch('/engine/run', {method: 'POST'})">Run</button>
+  <header>
+    <nav>
+      <span x-data="{ currentUser }">Welcome <span x-text="currentUser"></span></span>
+      <button onclick="runEngine()">Run</button>
+    </nav>
+  </header>
+  <main>
+    <section>
+      <h2>Integrations</h2>
+
+      <div x-data="{ providers: ALL_PROVIDERS }">
+        <template x-for="provider in providers">
+          <div x-data="{ creds: null }" x-init="creds = await getCredentials(provider.id)">
+            <span x-text="provider.name"></span>
+
+            <a :href="`/oauth2/authorize/${provider.id}`" x-show="!creds">Connect</a>
+            <b x-show="!!creds">✅  Connected</b>
+          </div>
+        </template>
+      </div>
+    </section>
+  </main>
 </body>
 </html>
