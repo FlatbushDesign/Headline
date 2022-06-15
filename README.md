@@ -29,4 +29,9 @@ export PYTHONPATH=$(pwd)
 
 ## Config
 
-Copy `.env.sample` to `.env`
+Copy `.env.sample` to `.env` and fill the appropriate environmental variables.
+
+### Google
+
+For Google's APIs authentication, download the service account `credentials.json` and save it in the
+`headline/` folder.

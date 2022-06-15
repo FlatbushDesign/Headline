@@ -5,6 +5,8 @@ from headline.provider import Provider
 
 
 class Gmail(Provider):
+    name = "gmail"
+
     def run(self, data: dict):
         self.service = build('gmail', 'v1', credentials=get_google_credentials())
 

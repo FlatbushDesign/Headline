@@ -7,6 +7,8 @@ import headline.config as config
 
 
 class Slack(Provider):
+    name = "slack"
+
     def run(self, data):
         client = WebClient(token=config.SLACK_TOKEN)
         user_id = data.get("userId")

@@ -17,6 +17,8 @@ def _datetime_to_iso(date: datetime):
 
 
 class GoogleCalendar(Provider):
+    name = "google-calendar"
+
     def __init__(self) -> None:
         super().__init__()
 
