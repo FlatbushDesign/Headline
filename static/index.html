@@ -22,10 +22,10 @@
 
       <div x-data="{ providers: ALL_PROVIDERS }">
         <template x-for="provider in providers">
-          <div x-data="{ creds: null }" x-init="creds = await getCredentials(provider.id)">
+          <div x-data="{ creds: null }" x-init="creds = await getCredentials(provider.credentials)">
             <span x-text="provider.name"></span>
 
-            <a :href="`/oauth2/authorize/${provider.id}`" x-show="!creds">Connect</a>
+            <a :href="`/oauth2/authorize/${provider.credentials}`" x-show="!creds">Connect</a>
             <b x-show="!!creds">✅  Connected</b>
           </div>
         </template>

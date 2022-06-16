@@ -6,7 +6,7 @@ import httpx
 
 from headline.db import get_collection
 from headline.provider import Credentials, Provider
-from headline.providers_repository import get_credentials
+from headline.providers_repository import get_credentials, get_providers_for_credentials
 
 
 api = FastAPI()
@@ -19,8 +19,9 @@ def _get_redirect_uri(credentials: Credentials):
 def _get_user_authorize_url(credentials: Credentials):
     redirect_uri = _get_redirect_uri(credentials)
     state = "62a9e25492b9284956ea2fe8"
+    scope = " ".join(credentials.__class__.scopes or [])
 
-    return f"{credentials.authorize_url}?response_type=code&client_id={credentials.client_id}&redirect_uri={redirect_uri}&state={state}"
+    return f"{credentials.authorize_url}?response_type=code&client_id={credentials.client_id}&redirect_uri={redirect_uri}&state={state}&scope={scope}"
 
 
 async def refresh_auth_token(user_credentials: dict, credentials: Credentials):
@@ -105,10 +106,13 @@ async def oauth2_redirect(provider: str, code: str, state: str = None):
         "credentials": provider,
     })
 
-    await get_collection("subscriptions").insert_one({
-        "user_id": user_id,
-        "provider": provider,
-        "data": {},
-    })
+    await get_collection("subscriptions").insert_many([
+        {
+            "user_id": user_id,
+            "provider": p.__class__.name,
+            "data": {},
+        }
+        for p in get_providers_for_credentials(provider)
+    ])
 
     return "/static/index.html"

@@ -4,19 +4,23 @@ const authHeader = { Authorization: 'Bearer fake-token' }
 const ALL_PROVIDERS = [
   {
     id: "slack",
-    name: "Slack"
+    name: "Slack",
+    credentials: "slack"
   },
   {
     id: "google-calendar",
-    name: "Google Calendar"
+    name: "Google Calendar",
+    credentials: "google"
   },
   {
     id: "gmail",
-    name: "GMail"
+    name: "GMail",
+    credentials: "google"
   },
   {
     id: "zoom",
-    name: "Zoom"
+    name: "Zoom",
+    credentials: "zoom"
   }
 ]
 

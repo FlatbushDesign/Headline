@@ -1,3 +1,4 @@
+from typing import List
 from dataclasses import dataclass
 import os
 
@@ -18,6 +19,7 @@ class Credentials:
     token_url: str
     client_id: str = None
     client_secret: str = None
+    scopes: List[str] = None
 
     def __init__(self) -> None:
         if not self.client_id:

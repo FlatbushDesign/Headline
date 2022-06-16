@@ -1,10 +1,10 @@
 from typing import List
 from datetime import datetime, timedelta
 
+from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
-from headline.google_client import get_google_credentials
 from headline.provider import Provider
 
 
@@ -18,11 +18,10 @@ def _datetime_to_iso(date: datetime):
 
 class GoogleCalendar(Provider):
     name = "google-calendar"
+    credentials: str = "google"
 
     def __init__(self) -> None:
         super().__init__()
-
-        self.service = build("calendar", "v3", credentials=get_google_credentials())
 
     def _get_busy_time(self, time_min: datetime, time_max: datetime, calendars: List[str] = None):
         body = {
@@ -41,7 +40,11 @@ class GoogleCalendar(Provider):
 
         return total_busy
 
-    def run(self, data):
+    async def run(self, data: dict, user_credentials: dict):
+        self.service = build("calendar", "v3", credentials=Credentials(user_credentials["access_token"]))
+
+        calendars = data.get("calendars", ["primary"])
+
         try:
             # Call the Calendar API
             now = (
@@ -50,7 +53,7 @@ class GoogleCalendar(Provider):
             events_result = (
                 self.service.events()
                 .list(
-                    calendarId="primary",
+                    calendarId=calendars[0],
                     timeMin=now,
                     maxResults=10,
                     singleEvents=True,
@@ -63,7 +66,11 @@ class GoogleCalendar(Provider):
             result = {
                 "meetings_duration_total": 0,
                 "meetings_recurrent_count": 0,
-                "busy_time": self._get_busy_time(datetime.today(), datetime.today() + timedelta(days=1)).seconds,
+                "busy_time": self._get_busy_time(
+                    time_min=datetime.today(),
+                    time_max=datetime.today() + timedelta(days=1),
+                    calendars=calendars
+                ).seconds,
             }
 
             # Prints the start and name of the next 10 events

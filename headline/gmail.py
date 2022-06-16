@@ -1,21 +1,24 @@
+from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
-from headline.google_client import get_google_credentials
 
 from headline.provider import Provider
 
 
 class Gmail(Provider):
     name = "gmail"
+    credentials: str = "google"
 
-    def run(self, data: dict):
-        self.service = build('gmail', 'v1', credentials=get_google_credentials())
+    async def run(self, data: dict, user_credentials: dict):
+        self.service = build('gmail', 'v1', credentials=Credentials(user_credentials["access_token"]))
+
+        email_address = self.service.users().getProfile(userId="me").execute()["emailAddress"]
 
         sent = self.service.users().messages().list(
-            userId="me", q=f"from:{data['email']} newer_than:1d"
+            userId="me", q=f"from:{data.get('email', email_address)} newer_than:1d"
         ).execute()
 
         received = self.service.users().messages().list(
-            userId="me", q=f"to:{data['email']} newer_than:1d"
+            userId="me", q=f"to:{data.get('email', email_address)} newer_than:1d"
         ).execute()
 
         return {

@@ -1,5 +1,6 @@
 from typing import Dict
 
+from headline.google_client import GoogleCredentials
 from headline.provider import Provider, Credentials
 from headline.slack import Slack
 from headline.google_calendar import GoogleCalendar
@@ -25,9 +26,17 @@ def get_provider(provider: str):
 def get_credentials(provider: str):
     return _all_credentials.get(provider)
 
+def get_providers_for_credentials(credentials_name: str):
+    return [
+        provider
+        for provider in _all_providers.values()
+        if (provider.__class__.credentials or provider.__class__.name) == credentials_name
+    ]
+
 
 register_provider(Slack())
 register_provider(GoogleCalendar())
 register_provider(Gmail())
 register_provider(Zoom())
+register_credentials(GoogleCredentials())
 register_credentials(ZoomCredentials())
