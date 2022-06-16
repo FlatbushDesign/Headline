@@ -5,7 +5,7 @@ from fastapi.responses import RedirectResponse
 import httpx
 
 from headline.db import get_collection
-from headline.provider import Credentials
+from headline.provider import Credentials, Provider
 from headline.providers_repository import get_credentials
 
 
@@ -21,6 +21,47 @@ def _get_user_authorize_url(credentials: Credentials):
     state = "62a9e25492b9284956ea2fe8"
 
     return f"{credentials.authorize_url}?response_type=code&client_id={credentials.client_id}&redirect_uri={redirect_uri}&state={state}"
+
+
+async def refresh_auth_token(user_credentials: dict, credentials: Credentials):
+    async with httpx.AsyncClient() as client:
+        response = await client.post(
+            credentials.token_url,
+            data={
+                "refresh_token": user_credentials.get("refresh_token"),
+                "grant_type": "refresh_token",
+            },
+            auth=(credentials.client_id, credentials.client_secret)
+        )
+
+    token_data: dict = response.json()
+
+    await get_collection("credentials").update_one(
+        {"_id": user_credentials.get("_id")},
+        {
+            "$set": {
+                "expires_at": datetime.today() + timedelta(seconds=token_data.get("expires_in", 0)),
+                "access_token": token_data["access_token"],
+                "refresh_token": token_data["refresh_token"],
+            }
+        }
+    )
+
+    return token_data
+
+
+async def get_user_credentials(provider: Provider, user_id: str):
+    credentials_name = provider.__class__.credentials or provider.__class__.name
+
+    user_credentials = await get_collection("credentials").find_one({
+        "user_id": user_id,
+        "credentials": credentials_name,
+    })
+
+    if user_credentials.get("expires_at") <= datetime.today() + timedelta(seconds=10):
+        return await refresh_auth_token(user_credentials, get_credentials(credentials_name))
+    else:
+        return user_credentials
 
 
 @api.get("/authorize/{provider}", response_class=RedirectResponse)

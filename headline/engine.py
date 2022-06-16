@@ -6,6 +6,7 @@ from fastapi import Depends, FastAPI, HTTPException
 from headline.auth import get_current_user
 from headline.db import get_collection
 from headline.models import EngineData, User
+from headline.oauth2 import get_user_credentials
 from headline.providers_repository import get_provider
 
 
@@ -23,7 +24,7 @@ async def run(current_user: User = Depends(get_current_user)):
         provider = get_provider(provider_id)
 
         user_id = subscription.get("user_id")
-        credentials = await provider._get_user_credentials(user_id)
+        credentials = await get_user_credentials(provider, user_id)
         if not credentials:
             raise HTTPException(400, f"User {user_id} credentials not found")
 

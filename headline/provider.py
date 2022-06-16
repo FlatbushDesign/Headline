@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 import os
-from headline.db import get_collection
 
 
 @dataclass
@@ -10,12 +9,6 @@ class Provider:
 
     async def run(self, data: dict, user_credentials: dict):
         pass
-
-    async def _get_user_credentials(self, user_id: str):
-        return await get_collection("credentials").find_one({
-            "user_id": user_id,
-            "credentials": self.__class__.credentials or self.__class__.name
-        })
 
 
 @dataclass
