@@ -23,4 +23,6 @@ class Zoom(Provider):
 
             response.raise_for_status()
 
-            return response.json().get("meetings", [])
+            return {
+                "meetings_count": len(response.json().get("meetings", []))
+            }

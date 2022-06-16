@@ -1,7 +1,7 @@
 from fastapi import Depends, FastAPI
 from fastapi.staticfiles import StaticFiles
-from headline.auth import get_current_user
 
+from headline.auth import get_current_user
 from headline.db import connect_db, get_collection
 from headline.models import User, UserCredentials
 from headline.oauth2 import api as oauth2_app

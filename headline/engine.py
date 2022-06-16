@@ -1,29 +1,24 @@
 from datetime import datetime
-import json
 from typing import List
-from pathlib import Path
 
-from fastapi import FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException
 
+from headline.auth import get_current_user
 from headline.db import get_collection
+from headline.models import EngineData, User
 from headline.providers_repository import get_provider
 
 
 api = FastAPI()
 
 
-def get_data_file(name: str):
-    return Path().parent / "data" / name
-
-
-def get_subscriptions() -> List[dict]:
-    with open(get_data_file("subscriptions.json")) as f:
-        return json.load(f)
-
-
 @api.post("/run")
-async def run():
-    for subscription in get_subscriptions():
+async def run(current_user: User = Depends(get_current_user)):
+    subscriptions = get_collection("subscriptions").find({
+        "user_id": current_user.id
+    })
+
+    async for subscription in subscriptions:
         provider_id = subscription.get("provider")
         provider = get_provider(provider_id)
 
@@ -36,9 +31,21 @@ async def run():
 
         await get_collection("daily_data").insert_one({
             "provider": provider_id,
+            "user_id": current_user.id,
             "data": data,
-            "date": datetime.today().isoformat(),
-            "created_at": datetime.today().isoformat(),
+            "date": datetime.today(),
+            "created_at": datetime.today(),
         })
 
     return {"status": "ok"}
+
+@api.get("/data", response_model=List[EngineData])
+async def get_daily_data(current_user: User = Depends(get_current_user)):
+    cursor = get_collection("daily_data").find({
+        "user_id": current_user.id
+    })
+
+    try:
+        return await cursor.to_list(100)
+    except Exception as e:
+        print(e)

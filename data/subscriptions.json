@@ -1,22 +1,7 @@
 [
   {
-    "provider": "slack",
-    "data": {
-      "userId": "U03KAJURJHX"
-    }
-  },
-  {
-    "provider": "google.calendar",
-    "data": {
-      "calendars": [
-        "primary"
-      ]
-    }
-  },
-  {
-    "provider": "google.gmail",
-    "data": {
-      "email": "luca.faggianelli@gmail.com"
-    }
+    "provider": "zoom",
+    "user_id": "1",
+    "data": {}
   }
 ]
