@@ -33,12 +33,21 @@
     </section>
 
     <section>
-      <h2>Today</h2>
+      <h2>Metrics</h2>
 
       <table>
-      <tbody x-data="{ entries: [] }" x-init="entries = await getData()">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Provider</th>
+            <th>Data</th>
+          </tr>
+        </thead>
+
+        <tbody x-data="{ entries: [] }" x-init="entries = await getData()">
           <template x-for="entry in entries">
             <tr>
+              <td x-text="entry.date.slice(0, 10)"></td>
               <td x-text="entry.provider"></td>
               <td x-text="JSON.stringify(entry.data)"></td>
             </tr>

@@ -1,3 +1,4 @@
+from operator import itemgetter
 import httpx
 from headline.provider import Provider, Credentials
 
@@ -23,6 +24,9 @@ class Zoom(Provider):
 
             response.raise_for_status()
 
+            meetings = response.json().get("meetings", [])
+
             return {
-                "meetings_count": len(response.json().get("meetings", []))
+                "meetings_count": len(meetings),
+                "meetings_duration_avg": (sum(map(itemgetter("duration"), meetings)) / len(meetings)) * 60
             }
