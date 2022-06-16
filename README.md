@@ -31,7 +31,13 @@ export PYTHONPATH=$(pwd)
 
 Copy `.env.sample` to `.env` and fill the appropriate environmental variables.
 
-### Google
+For each *OAuth2* provider you have to provide a `client_id` and `client_secret`, to do so,
+create 2 environmental variable for each auth provider with the format `<NAME>_CLIENT_ID`
+and `<NAME>_CLIENT_SECRET`, for example:
 
-For Google's APIs authentication, download the service account `credentials.json` and save it in the
-`headline/` folder.
+```env
+GOOGLE_CLIENT_ID=client_id here
+GOOGLE_CLIENT_SECRET=client_secret here
+```
+
+> Note: Google Auth provider covers both GMail and Google Calendar
