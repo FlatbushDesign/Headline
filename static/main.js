@@ -1,6 +1,3 @@
-const currentUser = "62a9e25492b9284956ea2fe8"
-const authHeader = { Authorization: 'Bearer fake-token' }
-
 const ALL_PROVIDERS = [
   {
     id: "slack",
@@ -25,15 +22,48 @@ const ALL_PROVIDERS = [
 ]
 
 const runEngine = async () => {
-  fetch('/engine/run', { method: 'POST', headers: { ...authHeader } })
+  fetch('/engine/run', { method: 'POST', credentials: "same-origin" })
 }
 
 const getCredentials = async (creds) => {
-  const response = await fetch(`/credentials/${creds}`, { headers: { ...authHeader } })
+  const response = await fetch(`/credentials/${creds}`, {
+    credentials: "same-origin"
+  })
   return await response.json()
 }
 
 const getData = async () => {
-  const response = await fetch('/engine/data', { method: 'GET', headers: { ...authHeader } })
-  return await response.json()
+  const response = await fetch('/engine/data', {
+    credentials: "same-origin"
+  })
+
+  if (response.ok) {
+    return await response.json()
+  } else {
+    return []
+  }
+}
+
+const signinGoogle = async () => {
+  const response = await fetch('/auth/google/authorize')
+  window.location = (await response.json()).authorization_url
+}
+
+const getCurrentUser = async () => {
+  const response = await fetch("/users/me", {
+    credentials: "same-origin"
+  })
+
+  if (response.ok) {
+    return await response.json()
+  } else {
+    return null
+  }
+}
+
+window.onload = function () {
+  const query = new URLSearchParams(location.search)
+  if (query.has('state')) {
+    location.search = undefined
+  }
 }

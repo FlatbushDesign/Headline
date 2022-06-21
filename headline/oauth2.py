@@ -1,12 +1,14 @@
 from datetime import datetime, timedelta
 from bson import ObjectId
-from fastapi import FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException
 from fastapi.responses import RedirectResponse
 import httpx
 
 from headline.db import get_collection
+from headline.models import User
 from headline.provider import Credentials, Provider
 from headline.providers_repository import get_credentials, get_providers_for_credentials
+from headline.users import current_active_user
 
 
 api = FastAPI()
@@ -16,9 +18,9 @@ def _get_redirect_uri(credentials: Credentials):
     return f"http://localhost:8000/oauth2/redirect/{credentials.name}"
 
 
-def _get_user_authorize_url(credentials: Credentials):
+def _get_user_authorize_url(credentials: Credentials, user: User):
     redirect_uri = _get_redirect_uri(credentials)
-    state = "62a9e25492b9284956ea2fe8"
+    state = user.id
     scope = " ".join(credentials.__class__.scopes or [])
 
     return f"{credentials.authorize_url}?response_type=code&client_id={credentials.client_id}&redirect_uri={redirect_uri}&state={state}&scope={scope}"
@@ -66,13 +68,13 @@ async def get_user_credentials(provider: Provider, user_id: str):
 
 
 @api.get("/authorize/{provider}", response_class=RedirectResponse)
-async def oauth2_redirect_to_authorize(provider: str):
+async def oauth2_redirect_to_authorize(provider: str, user: User = Depends(current_active_user)):
     credentials = get_credentials(provider)
 
     if not credentials:
         raise HTTPException(status_code=404, detail=f"Provider {provider} doesn't exist")
 
-    return _get_user_authorize_url(credentials)
+    return _get_user_authorize_url(credentials, user)
 
 
 @api.get("/redirect/{provider}", response_class=RedirectResponse)

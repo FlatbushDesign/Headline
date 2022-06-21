@@ -3,20 +3,20 @@ from typing import List
 
 from fastapi import Depends, FastAPI, HTTPException
 
-from headline.auth import get_current_user
 from headline.db import get_collection
 from headline.models import EngineData, User
 from headline.oauth2 import get_user_credentials
 from headline.providers_repository import get_provider
+from headline.users import current_active_user
 
 
 api = FastAPI()
 
 
 @api.post("/run")
-async def run(current_user: User = Depends(get_current_user)):
+async def run(user: User = Depends(current_active_user)):
     subscriptions = get_collection("subscriptions").find({
-        "user_id": current_user.id
+        "user_id": user.id
     })
 
     async for subscription in subscriptions:
@@ -32,7 +32,7 @@ async def run(current_user: User = Depends(get_current_user)):
 
         await get_collection("daily_data").insert_one({
             "provider": provider_id,
-            "user_id": current_user.id,
+            "user_id": user.id,
             "data": data,
             "date": datetime.today(),
             "created_at": datetime.today(),
@@ -41,9 +41,9 @@ async def run(current_user: User = Depends(get_current_user)):
     return {"status": "ok"}
 
 @api.get("/data", response_model=List[EngineData])
-async def get_daily_data(current_user: User = Depends(get_current_user)):
+async def get_daily_data(user: User = Depends(current_active_user)):
     cursor = get_collection("daily_data").find({
-        "user_id": current_user.id
+        "user_id": user.id
     })
 
     try:

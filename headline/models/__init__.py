@@ -1,7 +1,9 @@
 from datetime import datetime
-from typing import Any, Union
+from typing import Any, List, Union
 
+from beanie import PydanticObjectId
 from bson import ObjectId
+from fastapi_users.db import BaseOAuthAccount, BeanieBaseUser
 from pydantic import BaseModel, Field
 
 
@@ -21,16 +23,15 @@ class PyObjectId(ObjectId):
         field_schema.update(type="string")
 
 
-class User(BaseModel):
-    id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
+class OAuthAccount(BaseOAuthAccount):
+    pass
+
+
+class User(BeanieBaseUser[PydanticObjectId]):
     email: Union[str, None] = None
     full_name: Union[str, None] = None
     disabled: Union[bool, None] = None
-
-    class Config:
-        allow_population_by_field_name = True
-        arbitrary_types_allowed = True
-        json_encoders = {ObjectId: str}
+    oauth_accounts: List[OAuthAccount] = Field(default_factory=list)
 
 
 class UserCredentials(BaseModel):

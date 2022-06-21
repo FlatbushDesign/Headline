@@ -3,37 +3,60 @@
 <head>
   <meta charset='utf-8'>
   <meta http-equiv='X-UA-Compatible' content='IE=edge'>
-  <title>Page Title</title>
+  <title>Headline</title>
   <meta name='viewport' content='width=device-width, initial-scale=1'>
   <script src="//unpkg.com/alpinejs" defer></script>
-  <link rel="stylesheet" href="https://unpkg.com/bamboo.css">
+  <script src="https://cdn.tailwindcss.com"></script>
   <script src='main.js'></script>
 </head>
 <body>
-  <header>
-    <nav>
-      <span x-data="{ currentUser }">Welcome <span x-text="currentUser"></span></span>
-      <button onclick="runEngine()">Run</button>
-    </nav>
-  </header>
-  <main>
+  <nav class="px-8 h-16 flex items-center">
+    <div class="flex-grow flex">
+      <button class="bg-purple-800 text-white font-bold uppercase text-sm px-6 py-2 rounded-sm" onclick="runEngine()">Run</button>
+    </div>
+
+    <div class="h-16 w-16 flex flex-shrink-0 items-center justify-center font-bold text-white text-xs rounded-full bg-purple-800">
+      HDLN
+    </div>
+
+    <div x-data="{ currentUser: null }" x-init="currentUser = await getCurrentUser()" class="flex-grow flex justify-end">
+      <template x-if="!currentUser">
+        <button onclick="signinGoogle()">Sign-in with Google</button>
+      </template>
+
+      <template x-if="currentUser">
+        <span>Welcome <span x-text="currentUser && currentUser.email"></span></span>
+      </template>
+    </div>
+  </nav>
+
+  <main class="container mx-auto pt-16">
     <section>
-      <h2>Integrations</h2>
+      <h2 class="text-2xl mb-4">Connect Your Apps</h2>
 
       <div x-data="{ providers: ALL_PROVIDERS }">
         <template x-for="provider in providers">
           <div x-data="{ creds: null }" x-init="creds = await getCredentials(provider.credentials)">
             <span x-text="provider.name"></span>
 
-            <a :href="`/oauth2/authorize/${provider.credentials}`" x-show="!creds">Connect</a>
-            <b x-show="!!creds">✅  Connected</b>
+            <span class="ml-4">
+              <a
+                :href="`/oauth2/authorize/${provider.credentials}`"
+                x-show="!creds"
+                class="border-b text-purple-800"
+              >
+                Connect
+              </a>
+
+              <b x-show="!!creds">Connected!</b>
+            </span>
           </div>
         </template>
       </div>
     </section>
 
-    <section>
-      <h2>Metrics</h2>
+    <section class="mt-16">
+      <h2 class="text-2xl mb-4">Metrics</h2>
 
       <table>
         <thead>
