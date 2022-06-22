@@ -11,75 +11,99 @@
   <script src='main.js'></script>
 </head>
 
-<body>
-  <nav class="px-8 h-16 flex items-center">
-    <div class="flex-grow flex">
-      <button class="bg-purple-800 text-white font-bold uppercase text-sm px-6 py-2 rounded-sm" onclick="runEngine()">Run</button>
+<body x-data="{ currentUser: null }" x-init="currentUser = await getCurrentUser()">
+  <nav class="py-1 px-8 h-18 flex items-center">
+    <div class="flex-1 flex">
     </div>
 
     <div class="h-16 w-16 flex flex-shrink-0 items-center justify-center font-bold text-white text-xs rounded-full bg-purple-800">
       HDLN
     </div>
 
-    <div x-data="{ currentUser: null }" x-init="currentUser = await getCurrentUser()" class="flex-grow flex justify-end">
-      <template x-if="!currentUser">
-        <button onclick="signinGoogle()">Sign-in with Google</button>
-      </template>
-
+    <div class="flex-1 flex justify-end">
       <template x-if="currentUser">
-        <span>Welcome <span x-text="currentUser && currentUser.email"></span></span>
+        <div>
+          <div class="text-gray-500 text-sm">Welcome</div>
+          <div x-text="currentUser && currentUser.email"></div>
+        </div>
       </template>
     </div>
   </nav>
 
   <main class="container mx-auto pt-16">
-    <section>
-      <h2 class="text-2xl mb-4">Connect Your Apps</h2>
+    <template x-if="currentUser">
+      <div>
+        <section>
+          <h2 class="text-2xl mb-4">🔌 Connect Your Apps</h2>
 
-      <div x-data="{ providers: ALL_PROVIDERS }">
-        <template x-for="provider in providers">
-          <div x-data="{ creds: null }" x-init="creds = await getCredentials(provider.credentials)">
-            <span x-text="provider.name"></span>
+          <div x-data="{ providers: ALL_PROVIDERS }">
+            <template x-for="provider in providers">
+              <div x-data="{ creds: null }" x-init="creds = await getCredentials(provider.credentials)">
+                <span x-text="provider.name"></span>
 
-            <span class="ml-4">
-              <a
-                :href="`/oauth2/authorize/${provider.credentials}`"
-                x-show="!creds"
-                class="border-b text-purple-800"
-              >
-                Connect
-              </a>
+                <span class="ml-4">
+                  <a
+                    :href="`/oauth2/authorize/${provider.credentials}`"
+                    x-show="!creds"
+                    class="border-b text-purple-800"
+                  >
+                    Connect
+                  </a>
 
-              <b x-show="!!creds">Connected!</b>
-            </span>
+                  <b x-show="!!creds">Connected!</b>
+                </span>
+              </div>
+            </template>
           </div>
-        </template>
+        </section>
+
+        <section class="mt-16">
+          <div class="flex justify-between items-center">
+            <h2 class="text-2xl mb-4">📈 Metrics</h2>
+
+            <button
+              class="bg-purple-800 text-white font-bold uppercase text-sm px-4 py-2 rounded-sm hover:bg-purple-900"
+              onclick="runEngine()"
+            >
+              Run
+            </button>
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Provider</th>
+                <th>Data</th>
+              </tr>
+            </thead>
+
+            <tbody x-data="{ entries: [] }" x-init="entries = await getData()">
+              <template x-for="entry in entries">
+                <tr>
+                  <td x-text="entry.date.slice(0, 10)"></td>
+                  <td x-text="entry.provider"></td>
+                  <td x-text="JSON.stringify(entry.data)"></td>
+                </tr>
+              </template>
+            </tbody>
+          </table>
+        </section>
+      </template>
+
+      <template x-if="!currentUser">
+        <section class="text-center">
+          <h1 class="text-4xl mb-12">Welcome to Headline</h1>
+
+          <button
+            class="bg-purple-800 text-white font-bold uppercase text-sm px-6 py-2 rounded-sm hover:bg-purple-900"
+            onclick="signinGoogle()"
+          >
+            Sign-in with Google
+          </button>
+        </section>
       </div>
-    </section>
-
-    <section class="mt-16">
-      <h2 class="text-2xl mb-4">Metrics</h2>
-
-      <table>
-        <thead>
-          <tr>
-            <th>Date</th>
-            <th>Provider</th>
-            <th>Data</th>
-          </tr>
-        </thead>
-
-        <tbody x-data="{ entries: [] }" x-init="entries = await getData()">
-          <template x-for="entry in entries">
-            <tr>
-              <td x-text="entry.date.slice(0, 10)"></td>
-              <td x-text="entry.provider"></td>
-              <td x-text="JSON.stringify(entry.data)"></td>
-            </tr>
-          </template>
-        </tbody>
-      </table>
-    </section>
+    </template>
   </main>
 </body>
 </html>

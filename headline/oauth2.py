@@ -38,16 +38,17 @@ async def refresh_auth_token(user_credentials: dict, credentials: Credentials):
         )
 
     token_data: dict = response.json()
+    credentials_data = {
+        "expires_at": datetime.today() + timedelta(seconds=token_data.get("expires_in", 0)),
+        "access_token": token_data["access_token"],
+    }
+
+    if "refresh_token" in token_data:
+        credentials_data["refresh_token"] = token_data.get("refresh_token")
 
     await get_collection("credentials").update_one(
         {"_id": user_credentials.get("_id")},
-        {
-            "$set": {
-                "expires_at": datetime.today() + timedelta(seconds=token_data.get("expires_in", 0)),
-                "access_token": token_data["access_token"],
-                "refresh_token": token_data["refresh_token"],
-            }
-        }
+        {"$set": credentials_data}
     )
 
     return token_data

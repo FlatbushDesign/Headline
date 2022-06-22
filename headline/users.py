@@ -2,7 +2,7 @@ import os
 from typing import Optional
 
 from beanie import PydanticObjectId
-from fastapi import Depends, Request
+from fastapi import Depends, Request, status
 from fastapi_users import BaseUserManager, FastAPIUsers
 from fastapi_users.authentication import (
     AuthenticationBackend,
@@ -45,7 +45,11 @@ async def get_user_manager(user_db: BeanieUserDatabase = Depends(get_user_db)):
     yield UserManager(user_db)
 
 
-cookie_transport = CookieTransport(cookie_max_age=3600)
+class AutoRedirectCookieTransport(CookieTransport):
+    async def get_login_response(self, user, response):
+        await super().get_login_response(user, response)
+        response.status_code = status.HTTP_302_FOUND
+        response.headers["Location"] = "http://localhost:8000/static/index.html"
 
 
 def get_jwt_strategy() -> JWTStrategy:
@@ -54,7 +58,7 @@ def get_jwt_strategy() -> JWTStrategy:
 
 auth_backend = AuthenticationBackend(
     name="jwt",
-    transport=cookie_transport,
+    transport=AutoRedirectCookieTransport(cookie_max_age=3600),
     get_strategy=get_jwt_strategy,
 )
 

@@ -22,7 +22,8 @@ const ALL_PROVIDERS = [
 ]
 
 const runEngine = async () => {
-  fetch('/engine/run', { method: 'POST', credentials: "same-origin" })
+  await fetch('/engine/run', { method: 'POST', credentials: "same-origin" })
+  location.reload()
 }
 
 const getCredentials = async (creds) => {
