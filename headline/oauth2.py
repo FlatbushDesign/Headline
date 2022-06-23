@@ -38,6 +38,11 @@ async def refresh_auth_token(user_credentials: dict, credentials: Credentials):
         )
 
     token_data: dict = response.json()
+
+    if response.is_error or "error" in token_data:
+        print("Error refreshing token", response, response.content)
+        raise HTTPException(400, token_data)
+
     credentials_data = {
         "expires_at": datetime.today() + timedelta(seconds=token_data.get("expires_in", 0)),
         "access_token": token_data["access_token"],
