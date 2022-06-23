@@ -18,7 +18,9 @@ from headline.db import get_user_db
 from headline.models import User
 
 SECRET = "SECRET"
-CREDENTIALS_DURATIONS_SECS = timedelta(days=5).seconds
+JWT_DURATION_SECS = timedelta(days=5).seconds
+# Don't use the timedelta object as it doesn't work
+COOKIE_MAX_AGE = 5 * 24 * 3600
 
 google_oauth_client = GoogleOAuth2(
     os.getenv("GOOGLE_CLIENT_ID", ""),
@@ -56,12 +58,12 @@ class AutoRedirectCookieTransport(CookieTransport):
 
 
 def get_jwt_strategy() -> JWTStrategy:
-    return JWTStrategy(secret=SECRET, lifetime_seconds=CREDENTIALS_DURATIONS_SECS)
+    return JWTStrategy(secret=SECRET, lifetime_seconds=JWT_DURATION_SECS)
 
 
 auth_backend = AuthenticationBackend(
     name="jwt",
-    transport=AutoRedirectCookieTransport(cookie_max_age=CREDENTIALS_DURATIONS_SECS, cookie_samesite="None"),
+    transport=AutoRedirectCookieTransport(cookie_max_age=COOKIE_MAX_AGE, cookie_samesite="None"),
     get_strategy=get_jwt_strategy,
 )
 

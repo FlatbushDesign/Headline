@@ -4,7 +4,7 @@
   <meta charset='utf-8'>
   <meta http-equiv='X-UA-Compatible' content='IE=edge'>
   <title>Headline</title>
-  <link rel="icon" href="/static/favicon.png">
+  <link rel="icon" href="favicon.png">
   <meta name='viewport' content='width=device-width, initial-scale=1'>
   <script src="//unpkg.com/alpinejs" defer></script>
   <script src="https://cdn.tailwindcss.com"></script>
@@ -36,14 +36,14 @@
         <section>
           <h2 class="text-2xl mb-4">🔌 Connect Your Apps</h2>
 
-          <div x-data="{ providers: ALL_PROVIDERS }">
+          <div x-data="{ providers: ALL_PROVIDERS, apiBaseUrl: API_BASE_URL }">
             <template x-for="provider in providers">
               <div x-data="{ creds: null }" x-init="creds = await getCredentials(provider.credentials)">
                 <span x-text="provider.name"></span>
 
                 <span class="ml-4">
                   <a
-                    :href="`/oauth2/authorize/${provider.credentials}`"
+                    :href="`${apiBaseUrl}/oauth2/authorize/${provider.credentials}`"
                     x-show="!creds"
                     class="border-b text-purple-800"
                   >
