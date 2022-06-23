@@ -4,6 +4,7 @@ from fastapi import Depends, FastAPI, HTTPException
 from fastapi.responses import RedirectResponse
 import httpx
 
+import headline.config as config
 from headline.db import get_collection
 from headline.models import User
 from headline.provider import Credentials, Provider
@@ -15,7 +16,7 @@ api = FastAPI()
 
 
 def _get_redirect_uri(credentials: Credentials):
-    return f"http://localhost:8000/oauth2/redirect/{credentials.name}"
+    return f"{config.SERVER_URL}/oauth2/redirect/{credentials.name}"
 
 
 def _get_user_authorize_url(credentials: Credentials, user: User):
@@ -114,11 +115,16 @@ async def oauth2_redirect(provider: str, code: str, state: str = None):
         "credentials": provider,
     })
 
+    subscription_options = {}
+
+    if provider == "slack":
+        subscription_options = {"user_id": token_data.get("user_id")}
+
     await get_collection("subscriptions").insert_many([
         {
             "user_id": user_id,
             "provider": p.__class__.name,
-            "data": {},
+            "data": subscription_options,
         }
         for p in get_providers_for_credentials(provider)
     ])

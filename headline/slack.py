@@ -2,15 +2,25 @@ from operator import itemgetter
 
 from slack_sdk import WebClient
 
-from headline.provider import Provider
-import headline.config as config
+from headline.models import User
+from headline.provider import Credentials, Provider
+
+
+class SlackCredentials(Credentials):
+    name = "slack"
+    authorize_url = "https://slack.com/oauth/authorize"
+    token_url = "https://slack.com/api/oauth.access"
+    scopes = [
+        "channels:read",
+        "channels:history",
+    ]
 
 
 class Slack(Provider):
     name = "slack"
 
-    def run(self, data):
-        client = WebClient(token=config.SLACK_TOKEN)
+    async def run(self, data: dict, user_credentials: dict, user: User):
+        client = WebClient(token=user_credentials.get('access_token'))
         user_id = data.get("userId")
 
         response = client.users_conversations(user=user_id)
