@@ -10,7 +10,6 @@ class ZoomCredentials(Credentials):
     authorize_url = "https://zoom.us/oauth/authorize"
     token_url = "https://zoom.us/oauth/token"
     scopes = [
-        "meeting:read:admin",
         "meeting:read",
     ]
 
@@ -30,5 +29,5 @@ class Zoom(Provider):
 
             return {
                 "meetings_count": len(meetings),
-                "meetings_duration_avg": (sum(map(itemgetter("duration"), meetings)) / len(meetings)) * 60
+                "meetings_duration_avg": (sum(map(itemgetter("duration"), meetings)) / len(meetings)) * 60 if len(meetings) else 0
             }
