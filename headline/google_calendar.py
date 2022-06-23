@@ -62,23 +62,23 @@ class GoogleCalendar(Provider):
         calendars = data.get("calendars", ["primary"])
 
         try:
-            # Call the Calendar API
-            time_min = datetime.today().replace(hour=0, minute=0)
-            time_max = datetime.today()
-
-            events = self._get_calendars_events(time_min, time_max, calendars)
+            busy_time_tomorrow = self._get_busy_time(
+                    time_min=datetime.today(),
+                    time_max=datetime.today() + timedelta(days=1),
+                    calendars=calendars
+                ).seconds
 
             result = {
                 "meetings_duration_total": 0,
                 "meetings_recurrent_count": 0,
                 "meetings_count": 0,
                 "most_met": [],
-                "busy_time": self._get_busy_time(
-                    time_min=datetime.today(),
-                    time_max=datetime.today() + timedelta(days=1),
-                    calendars=calendars
-                ).seconds,
+                "busy_time_tomorrow": busy_time_tomorrow,
             }
+
+            time_min = datetime.today().replace(hour=0, minute=0)
+            time_max = datetime.today()
+            events = self._get_calendars_events(time_min, time_max, calendars)
 
             attendees_met_count = {}
 
