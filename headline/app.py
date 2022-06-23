@@ -1,5 +1,6 @@
 from beanie import init_beanie
 from fastapi import Depends, FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from headline.db import connect_db, get_collection
@@ -18,6 +19,20 @@ from headline.users import (
 db = connect_db()
 
 app = FastAPI()
+
+origins = [
+    "http://localhost",
+    "http://localhost:8000",
+    "https://headline-352617.web.app",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 app.mount("/oauth2", oauth2_app)

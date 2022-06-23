@@ -12,11 +12,13 @@ from fastapi_users.authentication import (
 )
 from fastapi_users.db import BeanieUserDatabase, ObjectIDIDMixin
 from httpx_oauth.clients.google import GoogleOAuth2
+from headline.config import FRONT_END_BASE_URL
 
 from headline.db import get_user_db
 from headline.models import User
 
 SECRET = "SECRET"
+CREDENTIALS_DURATIONS_SECS = timedelta(days=5).seconds
 
 google_oauth_client = GoogleOAuth2(
     os.getenv("GOOGLE_CLIENT_ID", ""),
@@ -50,16 +52,16 @@ class AutoRedirectCookieTransport(CookieTransport):
     async def get_login_response(self, user, response):
         await super().get_login_response(user, response)
         response.status_code = status.HTTP_302_FOUND
-        response.headers["Location"] = "http://localhost:8000/static/index.html"
+        response.headers["Location"] = FRONT_END_BASE_URL
 
 
 def get_jwt_strategy() -> JWTStrategy:
-    return JWTStrategy(secret=SECRET, lifetime_seconds=timedelta(days=5).seconds)
+    return JWTStrategy(secret=SECRET, lifetime_seconds=CREDENTIALS_DURATIONS_SECS)
 
 
 auth_backend = AuthenticationBackend(
     name="jwt",
-    transport=AutoRedirectCookieTransport(cookie_max_age=3600),
+    transport=AutoRedirectCookieTransport(cookie_max_age=CREDENTIALS_DURATIONS_SECS, cookie_samesite="None"),
     get_strategy=get_jwt_strategy,
 )
 

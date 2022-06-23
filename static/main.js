@@ -1,3 +1,8 @@
+// Prod:
+const API_BASE_URL = 'https://headline-352617.ue.r.appspot.com'
+// Dev:
+// const API_BASE_URL = ''
+
 const ALL_PROVIDERS = [
   {
     id: "slack",
@@ -22,20 +27,20 @@ const ALL_PROVIDERS = [
 ]
 
 const runEngine = async () => {
-  await fetch('/engine/run', { method: 'POST', credentials: "same-origin" })
+  await fetch(API_BASE_URL + '/engine/run', { method: 'POST', credentials: "include" })
   location.reload()
 }
 
 const getCredentials = async (creds) => {
-  const response = await fetch(`/credentials/${creds}`, {
-    credentials: "same-origin"
+  const response = await fetch(API_BASE_URL + `/credentials/${creds}`, {
+    credentials: "include"
   })
   return await response.json()
 }
 
 const getData = async () => {
-  const response = await fetch('/engine/data', {
-    credentials: "same-origin"
+  const response = await fetch(API_BASE_URL + '/engine/data', {
+    credentials: "include"
   })
 
   if (response.ok) {
@@ -46,13 +51,13 @@ const getData = async () => {
 }
 
 const signinGoogle = async () => {
-  const response = await fetch('/auth/google/authorize')
+  const response = await fetch(API_BASE_URL + '/auth/google/authorize')
   window.location = (await response.json()).authorization_url
 }
 
 const getCurrentUser = async () => {
-  const response = await fetch("/users/me", {
-    credentials: "same-origin"
+  const response = await fetch(API_BASE_URL + "/users/me", {
+    credentials: "include"
   })
 
   if (response.ok) {
