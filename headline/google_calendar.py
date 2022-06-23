@@ -1,9 +1,11 @@
+from operator import itemgetter
 from typing import List
 from datetime import datetime, timedelta
 
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
+from headline.models import User
 
 from headline.provider import Provider
 
@@ -40,32 +42,37 @@ class GoogleCalendar(Provider):
 
         return total_busy
 
-    async def run(self, data: dict, user_credentials: dict):
+    def _get_calendars_events(self, time_min: datetime, time_max: datetime, calendars: List[str] = None):
+        events_result = (
+                self.service.events()
+                .list(
+                    calendarId=calendars[0],
+                    timeMin=_datetime_to_iso(time_min),
+                    timeMax=_datetime_to_iso(time_max),
+                    singleEvents=True,
+                    orderBy="startTime",
+                )
+                .execute()
+            )
+        return events_result.get("items", [])
+
+    async def run(self, data: dict, user_credentials: dict, user: User):
         self.service = build("calendar", "v3", credentials=Credentials(user_credentials["access_token"]))
 
         calendars = data.get("calendars", ["primary"])
 
         try:
             # Call the Calendar API
-            now = (
-                datetime(2022, 1, 1).isoformat() + "Z"
-            )  # 'Z' indicates UTC time
-            events_result = (
-                self.service.events()
-                .list(
-                    calendarId=calendars[0],
-                    timeMin=now,
-                    maxResults=10,
-                    singleEvents=True,
-                    orderBy="startTime",
-                )
-                .execute()
-            )
-            events = events_result.get("items", [])
+            time_min = datetime.today().replace(hour=0, minute=0)
+            time_max = datetime.today()
+
+            events = self._get_calendars_events(time_min, time_max, calendars)
 
             result = {
                 "meetings_duration_total": 0,
                 "meetings_recurrent_count": 0,
+                "meetings_count": 0,
+                "most_met": [],
                 "busy_time": self._get_busy_time(
                     time_min=datetime.today(),
                     time_max=datetime.today() + timedelta(days=1),
@@ -73,7 +80,8 @@ class GoogleCalendar(Provider):
                 ).seconds,
             }
 
-            # Prints the start and name of the next 10 events
+            attendees_met_count = {}
+
             for event in events:
                 start = _parse_iso_datetime(
                     event["start"].get("dateTime", event["start"].get("date"))
@@ -86,8 +94,25 @@ class GoogleCalendar(Provider):
                 is_recurrent = bool(event.get("recurringEventId")) or bool(event.get("recurrence"))
                 if is_recurrent:
                     result["meetings_recurrent_count"] += 1
+                else:
+                    result["meetings_count"] += 1
 
                 result["meetings_duration_total"] += duration.seconds
+
+                attendees: List[dict] = event.get("attendees", [])
+                attendees.append(event.get("organizer"))
+                attendees.append(event.get("creator"))
+
+                attendees_emails = set(map(itemgetter("email"), attendees))
+                for email in attendees_emails:
+                    if not email or email == user.email:
+                        continue
+
+                    if not email in attendees_met_count:
+                        attendees_met_count[email] = 0
+                    attendees_met_count[email] += 1
+
+            result["most_met"] = sorted(attendees_met_count.items(), key=lambda item: item[1], reverse=True)
 
             return result
 

@@ -2,13 +2,15 @@ from typing import List
 from dataclasses import dataclass
 import os
 
+from headline.models import User
+
 
 @dataclass
 class Provider:
     name: str = None
     credentials: str = None
 
-    async def run(self, data: dict, user_credentials: dict):
+    async def run(self, data: dict, user_credentials: dict, user: User):
         pass
 
 

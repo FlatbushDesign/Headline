@@ -28,7 +28,7 @@ async def run(user: User = Depends(current_active_user)):
         if not credentials:
             raise HTTPException(400, f"User {user_id} credentials not found")
 
-        data = await provider.run(subscription.get("data"), credentials)
+        data = await provider.run(subscription.get("data"), credentials, user)
 
         await get_collection("daily_data").insert_one({
             "provider": provider_id,

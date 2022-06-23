@@ -1,3 +1,4 @@
+from datetime import timedelta
 import os
 from typing import Optional
 
@@ -53,7 +54,7 @@ class AutoRedirectCookieTransport(CookieTransport):
 
 
 def get_jwt_strategy() -> JWTStrategy:
-    return JWTStrategy(secret=SECRET, lifetime_seconds=3600)
+    return JWTStrategy(secret=SECRET, lifetime_seconds=timedelta(days=5).seconds)
 
 
 auth_backend = AuthenticationBackend(

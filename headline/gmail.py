@@ -1,5 +1,6 @@
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
+from headline.models import User
 
 from headline.provider import Provider
 
@@ -8,7 +9,7 @@ class Gmail(Provider):
     name = "gmail"
     credentials: str = "google"
 
-    async def run(self, data: dict, user_credentials: dict):
+    async def run(self, data: dict, user_credentials: dict, user: User):
         self.service = build('gmail', 'v1', credentials=Credentials(user_credentials["access_token"]))
 
         email_address = self.service.users().getProfile(userId="me").execute()["emailAddress"]
