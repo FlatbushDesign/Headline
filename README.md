@@ -10,21 +10,17 @@ pip install -r requirements.txt
 
 ## Run
 
-Run
+Run the server
 
 ```sh
-# On Mac or Linux
-./headline/main.py
-
-# On Win
-python3 headline\main.py
+uvicorn headline.app:app --reload
 ```
 
-Note: If you receive an error similar to `ModuleNotFoundError: No module named 'headline'`,
-it's because your IDE didn't properly set PYTHONPATH so run:
+Run the client
 
 ```sh
-export PYTHONPATH=$(pwd)
+cd static
+python -m http.server 3000
 ```
 
 ## Config

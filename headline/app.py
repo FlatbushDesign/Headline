@@ -21,7 +21,7 @@ db = connect_db()
 app = FastAPI()
 
 origins = [
-    "http://localhost",
+    "http://localhost:3000",
     "http://localhost:8000",
     "https://headline-352617.web.app",
 ]

@@ -1,7 +1,7 @@
 // Prod:
 const API_BASE_URL = 'https://headline-352617.ue.r.appspot.com'
 // Dev:
-// const API_BASE_URL = ''
+// const API_BASE_URL = 'http://localhost:8000'
 
 const ALL_PROVIDERS = [
   {
@@ -60,11 +60,13 @@ const getCurrentUser = async () => {
     credentials: "include"
   })
 
+  let user = null
+
   if (response.ok) {
-    return await response.json()
-  } else {
-    return null
+    user = await response.json()
   }
+
+  return user
 }
 
 window.onload = function () {
