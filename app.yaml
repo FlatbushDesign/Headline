@@ -1,3 +1,6 @@
 runtime: python310
 
+env_variables:
+  ENV: production
+
 entrypoint: uvicorn --port $PORT --host 0.0.0.0  headline.app:app
