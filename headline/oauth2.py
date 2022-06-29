@@ -18,10 +18,31 @@ api = FastAPI()
 
 
 def _get_redirect_uri(credentials: Credentials):
+    """Generate the redirect URI that should be called by the OAuth2 credentials provider
+    after a successful authentication. This is a URL pointing to the Headline server itself.
+
+    Args:
+        credentials (Credentials): _description_
+
+    Returns:
+        str: the redirect URI
+    """
     return f"{config.SERVER_URL}/oauth2/redirect/{credentials.name}"
 
 
 def _get_user_authorize_url(credentials: Credentials, user: User):
+    """Generate the URL for starting the OAuth2 auth dance
+
+    Args:
+        credentials (Credentials): A 3rd party OAuth2 credentials provider, i.e. `GoogleCredentials`
+        user (User): The user to which the credentials should be attached after a successful authentication.
+        Typically the user logged in to the platform.
+
+    Returns:
+        str: A URL that the user should visit for starting the OAuth2 auth dance,
+            i.e. `"https://accounts.google.com/o/oauth2/auth"`
+    """
+
     query_params = {
         "response_type": "code",
         "client_id": credentials.client_id,
