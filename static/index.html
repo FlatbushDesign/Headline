@@ -11,7 +11,7 @@
   <script src='main.js'></script>
 </head>
 
-<body x-data="{ currentUser: null }" x-init="currentUser = await getCurrentUser()">
+<body x-data="{ currentUser: null, isLoaded: false, async loadUser() {this.currentUser = await getCurrentUser(); this.isLoaded = true} }" x-init="loadUser()">
   <nav class="py-1 px-8 h-18 flex items-center">
     <div class="flex-1 flex">
     </div>
@@ -95,12 +95,18 @@
         <section class="text-center">
           <h1 class="text-4xl mb-12">Welcome to Headline</h1>
 
-          <button
-            class="bg-purple-800 text-white font-bold uppercase text-sm px-6 py-2 rounded-sm hover:bg-purple-900"
-            onclick="signinGoogle()"
-          >
-            Sign-in with Google
-          </button>
+          <template x-if="isLoaded">
+            <button
+              class="bg-purple-800 text-white font-bold uppercase text-sm px-6 py-2 rounded-sm hover:bg-purple-900"
+              onclick="signinGoogle()"
+            >
+              Sign-in with Google
+            </button>
+          </template>
+
+          <template x-if="!isLoaded">
+            <div>Loading...</div>
+          </template>
         </section>
       </div>
     </template>
