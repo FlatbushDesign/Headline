@@ -82,26 +82,35 @@ async def on_startup():
 
 @app.get("/credentials/{credentials}", response_model=UserCredentials)
 async def get_user_creds(credentials: str, user: User = Depends(current_active_user)):
-    return await get_collection("credentials").find_one({
-        "user_id": user.id,
-        "credentials": credentials,
-    })
+    return await get_collection("credentials").find_one(
+        {
+            "user_id": user.id,
+            "credentials": credentials,
+        }
+    )
+
 
 @app.delete("/credentials/{credentials}", responses={204: {"model": None}})
-async def delete_user_creds(credentials: str, user: User = Depends(current_active_user)):
-    result: DeleteResult = await get_collection("credentials").delete_one({
-        "user_id": user.id,
-        "credentials": credentials,
-    })
+async def delete_user_creds(
+    credentials: str, user: User = Depends(current_active_user)
+):
+    result: DeleteResult = await get_collection("credentials").delete_one(
+        {
+            "user_id": user.id,
+            "credentials": credentials,
+        }
+    )
 
     if result.deleted_count != 1:
         raise HTTPException(400, "Can't delete credentials")
 
-    subscriptions_providers = [ p.__class__.name for p in get_providers_for_credentials(credentials) ]
+    subscriptions_providers = [
+        p.__class__.name for p in get_providers_for_credentials(credentials)
+    ]
     result = await get_collection("subscriptions").delete_many(
         {
             "user_id": user.id,
-            "provider": { "$in": subscriptions_providers },
+            "provider": {"$in": subscriptions_providers},
         }
     )
 

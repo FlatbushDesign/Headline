@@ -10,19 +10,31 @@ class Gmail(Provider):
     credentials: str = "google"
 
     async def run(self, data: dict, user_credentials: dict, user: User):
-        self.service = build('gmail', 'v1', credentials=Credentials(user_credentials["access_token"]))
+        self.service = build(
+            "gmail", "v1", credentials=Credentials(user_credentials["access_token"])
+        )
 
-        email_address = self.service.users().getProfile(userId="me").execute()["emailAddress"]
+        email_address = (
+            self.service.users().getProfile(userId="me").execute()["emailAddress"]
+        )
 
-        sent = self.service.users().messages().list(
-            userId="me", q=f"from:{data.get('email', email_address)} newer_than:1d"
-        ).execute()
+        sent = (
+            self.service.users()
+            .messages()
+            .list(
+                userId="me", q=f"from:{data.get('email', email_address)} newer_than:1d"
+            )
+            .execute()
+        )
 
-        received = self.service.users().messages().list(
-            userId="me", q=f"to:{data.get('email', email_address)} newer_than:1d"
-        ).execute()
+        received = (
+            self.service.users()
+            .messages()
+            .list(userId="me", q=f"to:{data.get('email', email_address)} newer_than:1d")
+            .execute()
+        )
 
         return {
             "emails_sent": len(sent.get("messages", [])),
-            "emails_received": len(received.get("messages", []))
+            "emails_received": len(received.get("messages", [])),
         }

@@ -68,7 +68,7 @@ async def refresh_auth_token(user_credentials: dict, credentials: Credentials):
                 "refresh_token": user_credentials.get("refresh_token"),
                 "grant_type": "refresh_token",
             },
-            auth=(credentials.client_id, credentials.client_secret)
+            auth=(credentials.client_id, credentials.client_secret),
         )
 
     token_data: dict = response.json()
@@ -78,7 +78,8 @@ async def refresh_auth_token(user_credentials: dict, credentials: Credentials):
         raise HTTPException(400, token_data)
 
     credentials_data = {
-        "expires_at": datetime.today() + timedelta(seconds=token_data.get("expires_in", 0)),
+        "expires_at": datetime.today()
+        + timedelta(seconds=token_data.get("expires_in", 0)),
         "access_token": token_data["access_token"],
     }
 
@@ -86,8 +87,7 @@ async def refresh_auth_token(user_credentials: dict, credentials: Credentials):
         credentials_data["refresh_token"] = token_data.get("refresh_token")
 
     await get_collection("credentials").update_one(
-        {"_id": user_credentials.get("_id")},
-        {"$set": credentials_data}
+        {"_id": user_credentials.get("_id")}, {"$set": credentials_data}
     )
 
     return token_data
@@ -96,23 +96,31 @@ async def refresh_auth_token(user_credentials: dict, credentials: Credentials):
 async def get_user_credentials(provider: Provider, user_id: str):
     credentials_name = provider.__class__.credentials or provider.__class__.name
 
-    user_credentials = await get_collection("credentials").find_one({
-        "user_id": user_id,
-        "credentials": credentials_name,
-    })
+    user_credentials = await get_collection("credentials").find_one(
+        {
+            "user_id": user_id,
+            "credentials": credentials_name,
+        }
+    )
 
     if user_credentials.get("expires_at") <= datetime.today() + timedelta(seconds=10):
-        return await refresh_auth_token(user_credentials, get_credentials(credentials_name))
+        return await refresh_auth_token(
+            user_credentials, get_credentials(credentials_name)
+        )
     else:
         return user_credentials
 
 
 @api.get("/authorize/{provider}", response_class=RedirectResponse)
-async def oauth2_redirect_to_authorize(provider: str, user: User = Depends(current_active_user)):
+async def oauth2_redirect_to_authorize(
+    provider: str, user: User = Depends(current_active_user)
+):
     credentials = get_credentials(provider)
 
     if not credentials:
-        raise HTTPException(status_code=404, detail=f"Provider {provider} doesn't exist")
+        raise HTTPException(
+            status_code=404, detail=f"Provider {provider} doesn't exist"
+        )
 
     return _get_user_authorize_url(credentials, user)
 
@@ -123,7 +131,9 @@ async def oauth2_redirect(provider: str, code: str, state: str = None):
     user_id = ObjectId(state)
 
     if not credentials:
-        raise HTTPException(status_code=404, detail=f"Credentials {provider} don't exist")
+        raise HTTPException(
+            status_code=404, detail=f"Credentials {provider} don't exist"
+        )
 
     async with httpx.AsyncClient() as client:
         response = await client.post(
@@ -133,7 +143,7 @@ async def oauth2_redirect(provider: str, code: str, state: str = None):
                 "grant_type": "authorization_code",
                 "redirect_uri": _get_redirect_uri(credentials),
             },
-            auth=(credentials.client_id, credentials.client_secret)
+            auth=(credentials.client_id, credentials.client_secret),
         )
 
     token_data: dict = response.json()
@@ -141,25 +151,30 @@ async def oauth2_redirect(provider: str, code: str, state: str = None):
     if token_data.get("error"):
         raise HTTPException(status_code=400, detail=token_data)
 
-    await get_collection("credentials").insert_one({
-        **token_data,
-        "user_id": user_id,
-        "expires_at": datetime.today() + timedelta(seconds=token_data.get("expires_in")),
-        "credentials": provider,
-    })
+    await get_collection("credentials").insert_one(
+        {
+            **token_data,
+            "user_id": user_id,
+            "expires_at": datetime.today()
+            + timedelta(seconds=token_data.get("expires_in")),
+            "credentials": provider,
+        }
+    )
 
     subscription_options = {}
 
     if provider == "slack":
         subscription_options = {"user_id": token_data.get("user_id")}
 
-    await get_collection("subscriptions").insert_many([
-        {
-            "user_id": user_id,
-            "provider": p.__class__.name,
-            "data": subscription_options,
-        }
-        for p in get_providers_for_credentials(provider)
-    ])
+    await get_collection("subscriptions").insert_many(
+        [
+            {
+                "user_id": user_id,
+                "provider": p.__class__.name,
+                "data": subscription_options,
+            }
+            for p in get_providers_for_credentials(provider)
+        ]
+    )
 
     return "/static/index.html"

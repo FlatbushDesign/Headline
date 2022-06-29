@@ -63,7 +63,9 @@ def get_jwt_strategy() -> JWTStrategy:
 
 auth_backend = AuthenticationBackend(
     name="jwt",
-    transport=AutoRedirectCookieTransport(cookie_max_age=COOKIE_MAX_AGE, cookie_samesite="None"),
+    transport=AutoRedirectCookieTransport(
+        cookie_max_age=COOKIE_MAX_AGE, cookie_samesite="None"
+    ),
     get_strategy=get_jwt_strategy,
 )
 

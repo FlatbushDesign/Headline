@@ -13,11 +13,15 @@ class ZoomCredentials(Credentials):
         "meeting:read",
     ]
 
+
 class Zoom(Provider):
     name = "zoom"
 
     async def run(self, data: dict, user_credentials: dict, user: User):
-        async with httpx.AsyncClient(base_url="https://api.zoom.us/v2", headers={ "Authorization": f"Bearer {user_credentials.get('access_token')}" }) as client:
+        async with httpx.AsyncClient(
+            base_url="https://api.zoom.us/v2",
+            headers={"Authorization": f"Bearer {user_credentials.get('access_token')}"},
+        ) as client:
             response = await client.get("/users/me/meetings")
 
             if response.is_error:
@@ -29,5 +33,10 @@ class Zoom(Provider):
 
             return {
                 "meetings_count": len(meetings),
-                "meetings_duration_avg": (sum(map(itemgetter("duration"), meetings)) / len(meetings)) * 60 if len(meetings) else 0
+                "meetings_duration_avg": (
+                    sum(map(itemgetter("duration"), meetings)) / len(meetings)
+                )
+                * 60
+                if len(meetings)
+                else 0,
             }

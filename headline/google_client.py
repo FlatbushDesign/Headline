@@ -1,14 +1,9 @@
-from pathlib import Path
-
-from google.auth.transport.requests import Request
-from google_auth_oauthlib.flow import Flow
-
 from headline.provider import Credentials
 
 
 SCOPES = [
     "https://www.googleapis.com/auth/calendar.readonly",
-    "https://www.googleapis.com/auth/gmail.readonly"
+    "https://www.googleapis.com/auth/gmail.readonly",
 ]
 
 

@@ -1,4 +1,8 @@
-from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase, AsyncIOMotorCollection
+from motor.motor_asyncio import (
+    AsyncIOMotorClient,
+    AsyncIOMotorDatabase,
+    AsyncIOMotorCollection,
+)
 from fastapi_users.db import BeanieUserDatabase
 
 from headline.config import MONGO_DB_CONNECTION, MONGO_DB_DATABASE

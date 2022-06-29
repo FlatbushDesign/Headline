@@ -17,20 +17,25 @@ def register_provider(provider: Provider):
 
     _all_providers[provider.__class__.name] = provider
 
+
 def register_credentials(credentials: Credentials):
     _all_credentials[credentials.name] = credentials
+
 
 def get_provider(provider: str):
     return _all_providers.get(provider)
 
+
 def get_credentials(provider: str):
     return _all_credentials.get(provider)
+
 
 def get_providers_for_credentials(credentials_name: str):
     return [
         provider
         for provider in _all_providers.values()
-        if (provider.__class__.credentials or provider.__class__.name) == credentials_name
+        if (provider.__class__.credentials or provider.__class__.name)
+        == credentials_name
     ]
 
 

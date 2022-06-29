@@ -25,11 +25,13 @@ class GoogleCalendar(Provider):
     def __init__(self) -> None:
         super().__init__()
 
-    def _get_busy_time(self, time_min: datetime, time_max: datetime, calendars: List[str] = None):
+    def _get_busy_time(
+        self, time_min: datetime, time_max: datetime, calendars: List[str] = None
+    ):
         body = {
             "timeMin": _datetime_to_iso(time_min),
             "timeMax": _datetime_to_iso(time_max),
-            "items": [ { "id": calendar } for calendar in (calendars or ["primary"]) ],
+            "items": [{"id": calendar} for calendar in (calendars or ["primary"])],
         }
 
         response = self.service.freebusy().query(body=body).execute()
@@ -38,35 +40,41 @@ class GoogleCalendar(Provider):
 
         for calendar_id, calendar in response["calendars"].items():
             for busy in calendar["busy"]:
-                total_busy += _parse_iso_datetime(busy["end"]) - _parse_iso_datetime(busy["start"])
+                total_busy += _parse_iso_datetime(busy["end"]) - _parse_iso_datetime(
+                    busy["start"]
+                )
 
         return total_busy
 
-    def _get_calendars_events(self, time_min: datetime, time_max: datetime, calendars: List[str] = None):
+    def _get_calendars_events(
+        self, time_min: datetime, time_max: datetime, calendars: List[str] = None
+    ):
         events_result = (
-                self.service.events()
-                .list(
-                    calendarId=calendars[0],
-                    timeMin=_datetime_to_iso(time_min),
-                    timeMax=_datetime_to_iso(time_max),
-                    singleEvents=True,
-                    orderBy="startTime",
-                )
-                .execute()
+            self.service.events()
+            .list(
+                calendarId=calendars[0],
+                timeMin=_datetime_to_iso(time_min),
+                timeMax=_datetime_to_iso(time_max),
+                singleEvents=True,
+                orderBy="startTime",
             )
+            .execute()
+        )
         return events_result.get("items", [])
 
     async def run(self, data: dict, user_credentials: dict, user: User):
-        self.service = build("calendar", "v3", credentials=Credentials(user_credentials["access_token"]))
+        self.service = build(
+            "calendar", "v3", credentials=Credentials(user_credentials["access_token"])
+        )
 
         calendars = data.get("calendars", ["primary"])
 
         try:
             busy_time_tomorrow = self._get_busy_time(
-                    time_min=datetime.today(),
-                    time_max=datetime.today() + timedelta(days=1),
-                    calendars=calendars
-                ).seconds
+                time_min=datetime.today(),
+                time_max=datetime.today() + timedelta(days=1),
+                calendars=calendars,
+            ).seconds
 
             result = {
                 "meetings_duration_total": 0,
@@ -91,7 +99,9 @@ class GoogleCalendar(Provider):
                 )
                 duration = end - start
 
-                is_recurrent = bool(event.get("recurringEventId")) or bool(event.get("recurrence"))
+                is_recurrent = bool(event.get("recurringEventId")) or bool(
+                    event.get("recurrence")
+                )
                 if is_recurrent:
                     result["meetings_recurrent_count"] += 1
                 else:
@@ -112,7 +122,9 @@ class GoogleCalendar(Provider):
                         attendees_met_count[email] = 0
                     attendees_met_count[email] += 1
 
-            result["most_met"] = sorted(attendees_met_count.items(), key=lambda item: item[1], reverse=True)
+            result["most_met"] = sorted(
+                attendees_met_count.items(), key=lambda item: item[1], reverse=True
+            )
 
             return result
 
