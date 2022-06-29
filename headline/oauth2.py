@@ -1,4 +1,6 @@
 from datetime import datetime, timedelta
+from urllib.parse import urlencode
+
 from bson import ObjectId
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.responses import RedirectResponse
@@ -20,11 +22,21 @@ def _get_redirect_uri(credentials: Credentials):
 
 
 def _get_user_authorize_url(credentials: Credentials, user: User):
-    redirect_uri = _get_redirect_uri(credentials)
-    state = user.id
-    scope = " ".join(credentials.__class__.scopes or [])
+    query_params = {
+        "response_type": "code",
+        "client_id": credentials.client_id,
+        "redirect_uri": _get_redirect_uri(credentials),
+        # TODO: State should be more robust - serialize it as JSON and encrypt it
+        "state": user.id,
+        "scope": " ".join(credentials.__class__.scopes or []),
+        # Request user content even if the consent was given once
+        # This should be needed only during dev
+        "prompt": "consent",
+        # Be sure to obtain a refresh_token in the response
+        "access_type": "offline",
+    }
 
-    return f"{credentials.authorize_url}?response_type=code&client_id={credentials.client_id}&redirect_uri={redirect_uri}&state={state}&scope={scope}"
+    return f"{credentials.authorize_url}?{urlencode(query_params)}"
 
 
 async def refresh_auth_token(user_credentials: dict, credentials: Credentials):
@@ -98,7 +110,7 @@ async def oauth2_redirect(provider: str, code: str, state: str = None):
             data={
                 "code": code,
                 "grant_type": "authorization_code",
-                "redirect_uri": _get_redirect_uri(credentials)
+                "redirect_uri": _get_redirect_uri(credentials),
             },
             auth=(credentials.client_id, credentials.client_secret)
         )
