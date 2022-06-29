@@ -51,6 +51,7 @@
                   </a>
 
                   <b x-show="!!creds">Connected!</b>
+                  <button x-show="creds" @click="disconnectProvider(provider.credentials)">Disconnect</button>
                 </span>
               </div>
             </template>

@@ -1,7 +1,7 @@
 // Prod:
-const API_BASE_URL = 'https://headline-352617.ue.r.appspot.com'
+// const API_BASE_URL = 'https://headline-352617.ue.r.appspot.com'
 // Dev:
-// const API_BASE_URL = 'http://localhost:8000'
+const API_BASE_URL = 'http://localhost:8000'
 
 const ALL_PROVIDERS = [
   {
@@ -36,6 +36,15 @@ const getCredentials = async (creds) => {
     credentials: "include"
   })
   return await response.json()
+}
+
+const disconnectProvider = async (creds) => {
+  const response = await fetch(API_BASE_URL + `/credentials/${creds}`, {
+    method: 'DELETE',
+    credentials: "include"
+  })
+
+  location.reload()
 }
 
 const getData = async () => {
