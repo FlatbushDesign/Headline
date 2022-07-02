@@ -38,6 +38,7 @@ class UserCredentials(BaseModel):
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
     user_id: PyObjectId = Field(default_factory=PyObjectId)
     credentials: str
+    user_info: Any
 
     class Config:
         allow_population_by_field_name = True

@@ -49,13 +49,20 @@ def _get_user_authorize_url(credentials: Credentials, user: User):
         "redirect_uri": _get_redirect_uri(credentials),
         # TODO: State should be more robust - serialize it as JSON and encrypt it
         "state": user.id,
-        "scope": " ".join(credentials.__class__.scopes or []),
+        "scope": credentials.__class__.scope_separator.join(
+            credentials.__class__.scopes or []
+        ),
         # Request user content even if the consent was given once
         # This should be needed only during dev
         "prompt": "consent",
         # Be sure to obtain a refresh_token in the response
         "access_type": "offline",
     }
+
+    if credentials.__class__.user_scopes:
+        query_params["user_scope"] = credentials.__class__.scope_separator.join(
+            credentials.__class__.user_scopes or []
+        )
 
     return f"{credentials.authorize_url}?{urlencode(query_params)}"
 
@@ -158,23 +165,19 @@ async def oauth2_redirect(provider: str, code: str, state: str = None):
             "expires_at": datetime.today()
             + timedelta(seconds=token_data.get("expires_in")),
             "credentials": provider,
+            "user_info": await credentials.get_user_info(token_data),
         }
     )
-
-    subscription_options = {}
-
-    if provider == "slack":
-        subscription_options = {"user_id": token_data.get("user_id")}
 
     await get_collection("subscriptions").insert_many(
         [
             {
                 "user_id": user_id,
                 "provider": p.__class__.name,
-                "data": subscription_options,
+                "data": p.get_default_subscription_data(token_data),
             }
             for p in get_providers_for_credentials(provider)
         ]
     )
 
-    return "/static/index.html"
+    return config.FRONT_END_BASE_URL

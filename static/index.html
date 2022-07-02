@@ -36,23 +36,34 @@
         <section>
           <h2 class="text-2xl mb-4">🔌 Connect Your Apps</h2>
 
-          <div x-data="{ providers: ALL_PROVIDERS, apiBaseUrl: API_BASE_URL }">
+          <div x-data="{ providers: ALL_PROVIDERS, apiBaseUrl: API_BASE_URL }" class="grid grid-cols-4 gap-4">
             <template x-for="provider in providers">
-              <div x-data="{ creds: null }" x-init="creds = await getCredentials(provider.credentials)">
-                <span x-text="provider.name"></span>
+              <div x-data="{ creds: null }" x-init="creds = await getCredentials(provider.credentials)" class="rounded shadow-md p-4 flex flex-col">
+                <div x-text="provider.name" class="text-lg"></div>
 
-                <span class="ml-4">
+                <div class="mt-4 flex flex-grow">
+                  <template x-if="creds">
+                    <span>Connected as <span x-text="creds.user_info ? creds.user_info.email : 'unknown'"></span></span>
+                  </template>
+                </div>
+
+                <footer class="text-right mt-4">
+                  <button
+                    x-show="creds"
+                    class="bg-gray-50 text-red-700 font-bold uppercase text-sm px-4 py-2 rounded-sm hover:bg-gray-100 hover:text-red-800 transition-colors duration-200"
+                    @click="disconnectProvider(provider.credentials)"
+                  >
+                    Disconnect
+                  </button>
+
                   <a
-                    :href="`${apiBaseUrl}/oauth2/authorize/${provider.credentials}`"
                     x-show="!creds"
-                    class="border-b text-purple-800"
+                    :href="`${apiBaseUrl}/oauth2/authorize/${provider.credentials}`"
+                    class="bg-green-700 text-white font-bold uppercase text-sm px-4 py-2 rounded-sm hover:bg-green-800 transition-colors duration-200"
                   >
                     Connect
                   </a>
-
-                  <b x-show="!!creds">Connected!</b>
-                  <button x-show="creds" @click="disconnectProvider(provider.credentials)">Disconnect</button>
-                </span>
+                </footer>
               </div>
             </template>
           </div>
@@ -63,7 +74,7 @@
             <h2 class="text-2xl mb-4">📈 Metrics</h2>
 
             <button
-              class="bg-purple-800 text-white font-bold uppercase text-sm px-4 py-2 rounded-sm hover:bg-purple-900"
+              class="bg-purple-800 text-white font-bold uppercase text-sm px-4 py-2 rounded-sm hover:bg-purple-900 transition-colors duration-200"
               onclick="runEngine()"
             >
               Run
@@ -98,7 +109,7 @@
 
           <template x-if="isLoaded">
             <button
-              class="bg-purple-800 text-white font-bold uppercase text-sm px-6 py-2 rounded-sm hover:bg-purple-900"
+              class="bg-purple-800 text-white font-bold uppercase text-sm px-6 py-2 rounded-sm hover:bg-purple-900 transition-colors duration-200"
               onclick="signinGoogle()"
             >
               Sign-in with Google

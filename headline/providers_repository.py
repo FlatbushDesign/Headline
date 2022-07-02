@@ -1,6 +1,6 @@
 from typing import Dict
 
-from headline.google_client import GoogleCredentials
+from headline.google_credentials import GoogleCredentials
 from headline.provider import Provider, Credentials
 from headline.slack import Slack, SlackCredentials
 from headline.google_calendar import GoogleCalendar

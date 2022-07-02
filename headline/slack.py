@@ -8,16 +8,36 @@ from headline.provider import Credentials, Provider
 
 class SlackCredentials(Credentials):
     name = "slack"
-    authorize_url = "https://slack.com/oauth/authorize"
-    token_url = "https://slack.com/api/oauth.access"
+
+    authorize_url = "https://slack.com/oauth/v2/authorize"
+
+    token_url = "https://slack.com/api/oauth.v2.access"
+
     scopes = [
+        "users:read",
+        "users:read.email",
+        "users.profile:read",
         "channels:read",
         "channels:history",
     ]
 
+    user_scopes = [
+        "channels:read",
+        "channels:history",
+    ]
+
+    async def get_user_info(self, credentials: dict):
+        client = WebClient(token=credentials["access_token"])
+        response = client.users_profile_get(user=credentials["authed_user"]["id"])
+
+        return response["profile"]
+
 
 class Slack(Provider):
     name = "slack"
+
+    def get_default_subscription_data(self, user_credentials: dict) -> dict:
+        return {"user_id": user_credentials["authed_user"]["id"]}
 
     async def run(self, data: dict, user_credentials: dict, user: User):
         client = WebClient(token=user_credentials.get("access_token"))

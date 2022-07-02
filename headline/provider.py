@@ -13,6 +13,9 @@ class Provider:
     async def run(self, data: dict, user_credentials: dict, user: User):
         pass
 
+    async def get_default_subscription_data(self, user_credentials: dict) -> dict:
+        return {}
+
 
 @dataclass
 class Credentials:
@@ -22,8 +25,13 @@ class Credentials:
     client_id: str = None
     client_secret: str = None
     scopes: List[str] = None
+    user_scopes: List[str] = None
+    scope_separator: str = ","
 
     def __init__(self) -> None:
         if not self.client_id:
             self.client_id = os.getenv(f"{self.name.upper()}_CLIENT_ID")
             self.client_secret = os.getenv(f"{self.name.upper()}_CLIENT_SECRET")
+
+    async def get_user_info(self, credentials: dict):
+        pass
