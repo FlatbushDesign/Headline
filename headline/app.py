@@ -1,7 +1,6 @@
 from beanie import init_beanie
 from fastapi import Depends, FastAPI, HTTPException, Response
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
 from pymongo.results import DeleteResult
 
 from headline.db import connect_db, get_collection
@@ -23,7 +22,9 @@ db = connect_db()
 app = FastAPI()
 
 origins = [
+    "http://127.0.0.1:3000",
     "http://localhost:3000",
+    "http://127.0.0.1:8000",
     "http://localhost:8000",
     "https://headline-352617.web.app",
 ]
@@ -36,7 +37,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.mount("/static", StaticFiles(directory="static"), name="static")
 app.mount("/oauth2", oauth2_app)
 app.mount("/engine", engine_app)
 
