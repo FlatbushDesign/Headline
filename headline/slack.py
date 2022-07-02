@@ -51,10 +51,14 @@ class Slack(Provider):
             "channels_active": 0,
             "channels_newest": max(subscribed_channels, key=itemgetter("created"))[
                 "name"
-            ],
+            ]
+            if subscribed_channels
+            else None,
             "channels_oldest": min(subscribed_channels, key=itemgetter("created"))[
                 "name"
-            ],
+            ]
+            if subscribed_channels
+            else None,
             "messages_sent": 0,
         }
 
