@@ -1,7 +1,7 @@
 from datetime import datetime
-from typing import List
+from typing import List, Union
 
-from fastapi import Depends, FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException, Header
 
 from headline.db import get_collection
 from headline.models import EngineData, User
@@ -46,7 +46,10 @@ async def run(user: User = Depends(current_active_user)):
 
 
 @api.post("/run/all")
-async def run_all():
+async def run_all(x_appengine_cron: Union[str, None] = Header(default="false")):
+    if x_appengine_cron != "true":
+        raise HTTPException(401, "This endpoint can only be called by cron")
+
     subscriptions = get_collection("subscriptions").find()
 
     async for subscription in subscriptions:
