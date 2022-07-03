@@ -2,15 +2,13 @@ from typing import List
 from dataclasses import dataclass
 import os
 
-from headline.models import User
-
 
 @dataclass
 class Provider:
     name: str = None
     credentials: str = None
 
-    async def run(self, data: dict, user_credentials: dict, user: User):
+    async def run(self, data: dict, user_credentials: dict):
         pass
 
     async def get_default_subscription_data(self, user_credentials: dict) -> dict:

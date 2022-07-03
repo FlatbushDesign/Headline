@@ -5,7 +5,6 @@ from datetime import datetime, timedelta
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
-from headline.models import User
 
 from headline.provider import Provider
 
@@ -71,11 +70,12 @@ class GoogleCalendar(Provider):
         )
         return events_result.get("items", [])
 
-    async def run(self, data: dict, user_credentials: dict, user: User):
+    async def run(self, data: dict, user_credentials: dict):
         self.service = build(
             "calendar", "v3", credentials=Credentials(user_credentials["access_token"])
         )
 
+        user_email_address = user_credentials["user_info"]["email"]
         calendars = data.get("calendars", ["primary"])
 
         try:
@@ -124,7 +124,7 @@ class GoogleCalendar(Provider):
 
                 attendees_emails = set(map(itemgetter("email"), attendees))
                 for email in attendees_emails:
-                    if not email or email == user.email:
+                    if not email or email == user_email_address:
                         continue
 
                     if not email in attendees_met_count:

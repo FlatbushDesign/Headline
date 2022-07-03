@@ -13,30 +13,44 @@ from headline.users import current_active_user
 api = FastAPI()
 
 
+async def _run_subscription(subscription: dict):
+    provider_id = subscription.get("provider")
+    provider = get_provider(provider_id)
+
+    user_id = subscription.get("user_id")
+    credentials = await get_user_credentials(provider, user_id)
+    if not credentials:
+        raise HTTPException(400, f"User {user_id} credentials not found")
+
+    data = await provider.run(subscription.get("data"), credentials)
+
+    await get_collection("daily_data").insert_one(
+        {
+            "provider": provider_id,
+            "user_id": user_id,
+            "data": data,
+            "date": datetime.today(),
+            "created_at": datetime.today(),
+        }
+    )
+
+
 @api.post("/run")
 async def run(user: User = Depends(current_active_user)):
     subscriptions = get_collection("subscriptions").find({"user_id": user.id})
 
     async for subscription in subscriptions:
-        provider_id = subscription.get("provider")
-        provider = get_provider(provider_id)
+        await _run_subscription(subscription)
 
-        user_id = subscription.get("user_id")
-        credentials = await get_user_credentials(provider, user_id)
-        if not credentials:
-            raise HTTPException(400, f"User {user_id} credentials not found")
+    return {"status": "ok"}
 
-        data = await provider.run(subscription.get("data"), credentials, user)
 
-        await get_collection("daily_data").insert_one(
-            {
-                "provider": provider_id,
-                "user_id": user.id,
-                "data": data,
-                "date": datetime.today(),
-                "created_at": datetime.today(),
-            }
-        )
+@api.post("/run/all")
+async def run_all():
+    subscriptions = get_collection("subscriptions").find()
+
+    async for subscription in subscriptions:
+        await _run_subscription(subscription)
 
     return {"status": "ok"}
 

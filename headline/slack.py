@@ -2,7 +2,6 @@ from operator import itemgetter
 
 from slack_sdk import WebClient
 
-from headline.models import User
 from headline.provider import Credentials, Provider
 
 
@@ -39,7 +38,7 @@ class Slack(Provider):
     async def get_default_subscription_data(self, user_credentials: dict) -> dict:
         return {"user_id": user_credentials["authed_user"]["id"]}
 
-    async def run(self, data: dict, user_credentials: dict, user: User):
+    async def run(self, data: dict, user_credentials: dict):
         client = WebClient(token=user_credentials["authed_user"]["access_token"])
         user_id = data.get("userId")
 
