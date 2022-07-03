@@ -43,7 +43,21 @@
 
                 <div class="mt-4 flex flex-grow">
                   <template x-if="creds">
-                    <span>Connected as <span x-text="creds.user_info ? creds.user_info.email : 'unknown'"></span></span>
+                    <div x-data="{ sub: { data: {} } }" x-init="sub = await getSubscription(provider.id)">
+                      <span>Connected as <span x-text="creds.user_info ? creds.user_info.email : 'unknown'"></span></span>
+
+                      <template x-if="provider.id == 'google-calendar'">
+                        <div>
+                          Subscribed to calendars:
+
+                          <ul class="list-disc text-sm">
+                            <template x-for="calendar in sub.data.calendars">
+                              <li x-text="calendar"></li>
+                            </template>
+                          </ul>
+                        </div>
+                      </template>
+                    </div>
                   </template>
                 </div>
 

@@ -36,7 +36,7 @@ class SlackCredentials(Credentials):
 class Slack(Provider):
     name = "slack"
 
-    def get_default_subscription_data(self, user_credentials: dict) -> dict:
+    async def get_default_subscription_data(self, user_credentials: dict) -> dict:
         return {"user_id": user_credentials["authed_user"]["id"]}
 
     async def run(self, data: dict, user_credentials: dict, user: User):

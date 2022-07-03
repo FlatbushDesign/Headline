@@ -38,6 +38,13 @@ const getCredentials = async (creds) => {
   return await response.json()
 }
 
+const getSubscription = async (provider) => {
+  const response = await fetch(API_BASE_URL + `/subscriptions/${provider}`, {
+    credentials: "include"
+  })
+  return await response.json()
+}
+
 const disconnectProvider = async (creds) => {
   const response = await fetch(API_BASE_URL + `/credentials/${creds}`, {
     method: 'DELETE',

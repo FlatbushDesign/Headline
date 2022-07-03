@@ -25,6 +25,15 @@ class GoogleCalendar(Provider):
     def __init__(self) -> None:
         super().__init__()
 
+    async def get_default_subscription_data(self, user_credentials: dict) -> dict:
+        self.service = build(
+            "calendar", "v3", credentials=Credentials(user_credentials["access_token"])
+        )
+
+        calendars = self.service.calendarList().list().execute()["items"]
+
+        return {"calendars": [calendar["id"] for calendar in calendars]}
+
     def _get_busy_time(
         self, time_min: datetime, time_max: datetime, calendars: List[str] = None
     ):

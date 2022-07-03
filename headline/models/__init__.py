@@ -46,6 +46,18 @@ class UserCredentials(BaseModel):
         json_encoders = {ObjectId: str}
 
 
+class ProviderSubscription(BaseModel):
+    id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
+    user_id: PyObjectId = Field(default_factory=PyObjectId)
+    provider: str
+    data: Any
+
+    class Config:
+        allow_population_by_field_name = True
+        arbitrary_types_allowed = True
+        json_encoders = {ObjectId: str}
+
+
 class EngineData(BaseModel):
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
     user_id: PyObjectId = Field(default_factory=PyObjectId)

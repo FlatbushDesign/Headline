@@ -26,7 +26,7 @@ class Credentials:
     client_secret: str = None
     scopes: List[str] = None
     user_scopes: List[str] = None
-    scope_separator: str = ","
+    scope_separator: str = " "
 
     def __init__(self) -> None:
         if not self.client_id:

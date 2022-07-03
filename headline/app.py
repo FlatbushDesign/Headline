@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pymongo.results import DeleteResult
 
 from headline.db import connect_db, get_collection
-from headline.models import User, UserCredentials
+from headline.models import ProviderSubscription, User, UserCredentials
 from headline.oauth2 import api as oauth2_app
 from headline.engine import api as engine_app
 from headline.providers_repository import get_providers_for_credentials
@@ -86,6 +86,18 @@ async def get_user_creds(credentials: str, user: User = Depends(current_active_u
         {
             "user_id": user.id,
             "credentials": credentials,
+        }
+    )
+
+
+@app.get("/subscriptions/{provider}", response_model=ProviderSubscription)
+async def get_user_subscription(
+    provider: str, user: User = Depends(current_active_user)
+):
+    return await get_collection("subscriptions").find_one(
+        {
+            "user_id": user.id,
+            "provider": provider,
         }
     )
 

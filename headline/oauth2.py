@@ -198,7 +198,7 @@ async def oauth2_redirect(provider: str, code: str, state: str = None):
             {
                 "user_id": user_id,
                 "provider": p.__class__.name,
-                "data": p.get_default_subscription_data(token_data),
+                "data": await p.get_default_subscription_data(token_data),
             }
             for p in get_providers_for_credentials(provider)
         ]
