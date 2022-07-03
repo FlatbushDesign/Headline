@@ -27,7 +27,7 @@ python -m http.server 3000
 
 Copy `.env.sample` to `.env` and fill the appropriate environmental variables.
 
-For each *OAuth2* provider you have to provide a `client_id` and `client_secret`, to do so,
+For each _OAuth2_ provider you have to provide a `client_id` and `client_secret`, to do so,
 create 2 environmental variable for each auth provider with the format `<NAME>_CLIENT_ID`
 and `<NAME>_CLIENT_SECRET`, for example:
 
@@ -37,3 +37,17 @@ GOOGLE_CLIENT_SECRET=client_secret here
 ```
 
 > Note: Google Auth provider covers both GMail and Google Calendar
+
+## Deploy
+
+Front-end:
+
+```sh
+firebase deploy
+```
+
+Back-end:
+
+```sh
+gcloud app deploy app.yaml cron.yaml
+```
