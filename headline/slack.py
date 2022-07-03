@@ -40,7 +40,7 @@ class Slack(Provider):
         return {"user_id": user_credentials["authed_user"]["id"]}
 
     async def run(self, data: dict, user_credentials: dict, user: User):
-        client = WebClient(token=user_credentials.get("access_token"))
+        client = WebClient(token=user_credentials["authed_user"]["access_token"])
         user_id = data.get("userId")
 
         response = client.users_conversations(user=user_id)

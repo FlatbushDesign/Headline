@@ -67,12 +67,16 @@ def _get_user_authorize_url(credentials: Credentials, user: User):
     return f"{credentials.authorize_url}?{urlencode(query_params)}"
 
 
-async def refresh_auth_token(user_credentials: dict, credentials: Credentials):
+async def refresh_auth_token(
+    user_credentials: dict, credentials: Credentials, token_path: str = None
+):
     async with httpx.AsyncClient() as client:
         response = await client.post(
             credentials.token_url,
             data={
-                "refresh_token": user_credentials.get("refresh_token"),
+                "refresh_token": user_credentials[token_path].get("refresh_token")
+                if token_path
+                else user_credentials.get("refresh_token"),
                 "grant_type": "refresh_token",
             },
             auth=(credentials.client_id, credentials.client_secret),
@@ -84,20 +88,25 @@ async def refresh_auth_token(user_credentials: dict, credentials: Credentials):
         print("Error refreshing token", response, response.content)
         raise HTTPException(400, token_data)
 
-    credentials_data = {
-        "expires_at": datetime.today()
-        + timedelta(seconds=token_data.get("expires_in", 0)),
-        "access_token": token_data["access_token"],
-    }
-
-    if "refresh_token" in token_data:
-        credentials_data["refresh_token"] = token_data.get("refresh_token")
-
-    await get_collection("credentials").update_one(
-        {"_id": user_credentials.get("_id")}, {"$set": credentials_data}
+    (user_credentials[token_path] if token_path else user_credentials).update(
+        {
+            "expires_at": datetime.today()
+            + timedelta(seconds=token_data.get("expires_in", 0)),
+            "access_token": token_data["access_token"],
+        }
     )
 
-    return token_data
+    if "refresh_token" in token_data:
+        (user_credentials[token_path] if token_path else user_credentials)[
+            "refresh_token"
+        ] = token_data.get("refresh_token")
+
+    await get_collection("credentials").update_one(
+        {"_id": user_credentials.get("_id")},
+        {"$set": user_credentials},
+    )
+
+    return user_credentials
 
 
 async def get_user_credentials(provider: Provider, user_id: str):
@@ -111,11 +120,21 @@ async def get_user_credentials(provider: Provider, user_id: str):
     )
 
     if user_credentials.get("expires_at") <= datetime.today() + timedelta(seconds=10):
-        return await refresh_auth_token(
+        user_credentials = await refresh_auth_token(
             user_credentials, get_credentials(credentials_name)
         )
-    else:
-        return user_credentials
+
+    if credentials_name == "slack":
+        if user_credentials["authed_user"].get(
+            "expires_at"
+        ) <= datetime.today() + timedelta(seconds=10):
+            user_credentials = await refresh_auth_token(
+                user_credentials,
+                get_credentials(credentials_name),
+                "authed_user",
+            )
+
+    return user_credentials
 
 
 @api.get("/authorize/{provider}", response_class=RedirectResponse)
@@ -157,6 +176,11 @@ async def oauth2_redirect(provider: str, code: str, state: str = None):
 
     if token_data.get("error"):
         raise HTTPException(status_code=400, detail=token_data)
+
+    if provider == "slack":
+        token_data["authed_user"]["expires_at"] = datetime.today() + timedelta(
+            seconds=token_data["authed_user"].get("expires_in")
+        )
 
     await get_collection("credentials").insert_one(
         {
