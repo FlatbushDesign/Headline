@@ -66,6 +66,18 @@ const getData = async () => {
   }
 }
 
+const logout = async () => {
+  try {
+    await fetch(API_BASE_URL + '/auth/jwt/logout', {
+      method: 'POST',
+      credentials: "include"
+    })
+    location.reload()
+  } catch (e) {
+    console.error('Error logging out', e)
+  }
+}
+
 const signinGoogle = async () => {
   const response = await fetch(API_BASE_URL + '/auth/google/authorize')
   window.location = (await response.json()).authorization_url

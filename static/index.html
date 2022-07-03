@@ -22,9 +22,15 @@
 
     <div class="flex-1 flex justify-end">
       <template x-if="currentUser">
-        <div>
-          <div class="text-gray-500 text-sm">Welcome</div>
-          <div x-text="currentUser && currentUser.email"></div>
+        <div class="flex">
+          <div>
+            <div class="text-gray-500 text-sm">Welcome</div>
+            <div x-text="currentUser && currentUser.email"></div>
+          </div>
+
+          <button class="ml-2" @click="logout">
+            Logout
+          </button>
         </div>
       </template>
     </div>
