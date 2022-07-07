@@ -78,7 +78,7 @@
 
                   <a
                     x-show="!creds"
-                    :href="`${apiBaseUrl}/oauth2/authorize/${provider.credentials}`"
+                    :href="`${apiBaseUrl}/oauth2/authorize/${provider.credentials}?timezone=${Intl.DateTimeFormat().resolvedOptions().timeZone}`"
                     class="bg-green-700 text-white font-bold uppercase text-sm px-4 py-2 rounded-sm hover:bg-green-800 transition-colors duration-200"
                   >
                     Connect

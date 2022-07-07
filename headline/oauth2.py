@@ -1,3 +1,4 @@
+from base64 import b64decode, b64encode
 from datetime import datetime, timedelta
 from urllib.parse import urlencode
 
@@ -5,6 +6,7 @@ from bson import ObjectId
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.responses import RedirectResponse
 import httpx
+from pydantic import BaseModel
 
 import headline.config as config
 from headline.db import get_collection
@@ -15,6 +17,21 @@ from headline.users import current_active_user
 
 
 api = FastAPI()
+
+
+class OAuthState(BaseModel):
+    timezone: str = None
+    user_id: str
+
+
+def _serialize_state(state: OAuthState):
+    # TODO: State should be encrypted
+    return b64encode(bytes(state.json(), "utf-8")).decode("utf-8")
+
+
+def _deserialize_state(state: str):
+    # TODO: State should be encrypted
+    return OAuthState.parse_raw(b64decode(state))
 
 
 def _get_redirect_uri(credentials: Credentials):
@@ -30,7 +47,7 @@ def _get_redirect_uri(credentials: Credentials):
     return f"{config.SERVER_URL}/oauth2/redirect/{credentials.name}"
 
 
-def _get_user_authorize_url(credentials: Credentials, user: User):
+def _get_user_authorize_url(credentials: Credentials, state: OAuthState):
     """Generate the URL for starting the OAuth2 auth dance
 
     Args:
@@ -47,8 +64,7 @@ def _get_user_authorize_url(credentials: Credentials, user: User):
         "response_type": "code",
         "client_id": credentials.client_id,
         "redirect_uri": _get_redirect_uri(credentials),
-        # TODO: State should be more robust - serialize it as JSON and encrypt it
-        "state": user.id,
+        "state": _serialize_state(state),
         "scope": credentials.__class__.scope_separator.join(
             credentials.__class__.scopes or []
         ),
@@ -139,7 +155,7 @@ async def get_user_credentials(provider: Provider, user_id: str):
 
 @api.get("/authorize/{provider}", response_class=RedirectResponse)
 async def oauth2_redirect_to_authorize(
-    provider: str, user: User = Depends(current_active_user)
+    provider: str, timezone: str = None, user: User = Depends(current_active_user)
 ):
     credentials = get_credentials(provider)
 
@@ -148,13 +164,18 @@ async def oauth2_redirect_to_authorize(
             status_code=404, detail=f"Provider {provider} doesn't exist"
         )
 
-    return _get_user_authorize_url(credentials, user)
+    state = OAuthState(
+        user_id=str(user.id),
+        timezone=timezone,
+    )
+
+    return _get_user_authorize_url(credentials, state)
 
 
 @api.get("/redirect/{provider}", response_class=RedirectResponse)
 async def oauth2_redirect(provider: str, code: str, state: str = None):
     credentials = get_credentials(provider)
-    user_id = ObjectId(state)
+    oauth_state = _deserialize_state(state)
 
     if not credentials:
         raise HTTPException(
@@ -182,6 +203,8 @@ async def oauth2_redirect(provider: str, code: str, state: str = None):
             seconds=token_data["authed_user"].get("expires_in")
         )
 
+    user_id = ObjectId(oauth_state.user_id)
+
     await get_collection("credentials").insert_one(
         {
             **token_data,
@@ -199,6 +222,7 @@ async def oauth2_redirect(provider: str, code: str, state: str = None):
                 "user_id": user_id,
                 "provider": p.__class__.name,
                 "data": await p.get_default_subscription_data(token_data),
+                "timezone": oauth_state.timezone,
             }
             for p in get_providers_for_credentials(provider)
         ]

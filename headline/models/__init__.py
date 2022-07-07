@@ -4,7 +4,8 @@ from typing import Any, List, Union
 from beanie import PydanticObjectId
 from bson import ObjectId
 from fastapi_users.db import BaseOAuthAccount, BeanieBaseUser
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, validator
+import pytz
 
 
 class PyObjectId(ObjectId):
@@ -51,6 +52,13 @@ class ProviderSubscription(BaseModel):
     user_id: PyObjectId = Field(default_factory=PyObjectId)
     provider: str
     data: Any
+    timezone: str = "America/New_York"
+
+    @validator("timezone")
+    def is_valid_timezone(cls, value):
+        assert value in pytz.all_timezones, f"{value} is not a valid timezone"
+
+        return value
 
     class Config:
         allow_population_by_field_name = True
@@ -63,7 +71,9 @@ class EngineData(BaseModel):
     user_id: PyObjectId = Field(default_factory=PyObjectId)
     provider: str = Field()
     data: Any = Field()
-    date: datetime = Field()
+    date: str = Field()
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
 
     class Config:
         allow_population_by_field_name = True
