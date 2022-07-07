@@ -26,6 +26,14 @@ const ALL_PROVIDERS = [
   }
 ]
 
+const getLocalDateIsoString = (date = new Date()) => (
+  [
+    date.getFullYear(),
+    (date.getMonth() + 1).toString().padStart(2, '0'),
+    date.getDate().toString().padStart(2, '0'),
+  ].join('-')
+)
+
 const runEngine = async () => {
   await fetch(API_BASE_URL + '/engine/run', { method: 'POST', credentials: "include" })
   location.reload()
@@ -54,8 +62,20 @@ const disconnectProvider = async (creds) => {
   location.reload()
 }
 
-const getData = async () => {
-  const response = await fetch(API_BASE_URL + '/engine/data', {
+const getDataToday = async () => {
+  const response = await fetch(API_BASE_URL + `/engine/data?date=${getLocalDateIsoString()}`, {
+    credentials: "include"
+  })
+
+  if (response.ok) {
+    return await response.json()
+  } else {
+    return []
+  }
+}
+
+const getDataHistory = async () => {
+  const response = await fetch(API_BASE_URL + `/engine/data?date__lt=${getLocalDateIsoString()}`, {
     credentials: "include"
   })
 

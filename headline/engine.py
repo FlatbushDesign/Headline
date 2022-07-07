@@ -80,8 +80,17 @@ async def run_all(x_appengine_cron: Union[str, None] = Header(default="false")):
 
 
 @api.get("/data", response_model=List[EngineData])
-async def get_daily_data(user: User = Depends(current_active_user)):
-    cursor = get_collection("daily_data").find({"user_id": user.id})
+async def get_daily_data(
+    date: str = None, date__lt: str = None, user: User = Depends(current_active_user)
+):
+    where = {"user_id": user.id}
+
+    if date:
+        where["date"] = date
+    elif date__lt:
+        where["date"] = {"$lt": date__lt}
+
+    cursor = get_collection("daily_data").find(where)
 
     try:
         return await cursor.to_list(100)
