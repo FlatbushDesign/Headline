@@ -26,13 +26,19 @@ const ALL_PROVIDERS = [
   }
 ]
 
-const getLocalDateIsoString = (date = new Date()) => (
-  [
+const getLocalDateIsoString = () => {
+  const date = new Date()
+
+  if (date.getHours() < 18) {
+    date.setDate(date.getDate() - 1)
+  }
+
+  return [
     date.getFullYear(),
     (date.getMonth() + 1).toString().padStart(2, '0'),
     date.getDate().toString().padStart(2, '0'),
   ].join('-')
-)
+}
 
 const runEngine = async () => {
   await fetch(API_BASE_URL + '/engine/run', { method: 'POST', credentials: "include" })

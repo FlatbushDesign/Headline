@@ -91,9 +91,13 @@
 
         <section class="mt-16">
           <div class="flex justify-between items-center">
-            <h2 class="text-2xl mb-4">☀️ What happened today</h2>
+            <h2 class="text-2xl mb-4">☀️ Latest metrics</h2>
 
-            <span x-text="getLocalDateIsoString()"></span>
+            <div>
+
+              <span x-text="getLocalDateIsoString()"></span>
+              ⏱ 18:00
+            </div>
           </div>
 
           <table>
@@ -107,8 +111,16 @@
             <tbody x-data="{ entries: [] }" x-init="entries = await getDataToday()">
               <template x-for="entry in entries">
                 <tr>
-                  <td x-text="entry.provider"></td>
-                  <td x-text="JSON.stringify(entry.data)"></td>
+                  <td x-text="entry.provider" class="p-2 align-baseline"></td>
+                  <td class="p-2 align-baseline">
+                    <template x-for="[ metric, value ] in Object.entries(entry.data)">
+                      <div>
+                        <span x-text="metric"></span>
+                        →
+                        <strong x-text="value"></strong>
+                      </div>
+                    </template>
+                  </td>
                 </tr>
               </template>
             </tbody>
@@ -132,9 +144,17 @@
             <tbody x-data="{ entries: [] }" x-init="entries = await getDataHistory()">
               <template x-for="entry in entries">
                 <tr>
-                  <td x-text="entry.date.slice(0, 10)"></td>
-                  <td x-text="entry.provider"></td>
-                  <td x-text="JSON.stringify(entry.data)"></td>
+                  <td x-text="entry.date.slice(0, 10)" class="p-2 align-baseline"></td>
+                  <td x-text="entry.provider" class="p-2 align-baseline"></td>
+                  <td class="p-2 align-baseline">
+                    <template x-for="[ metric, value ] in Object.entries(entry.data)">
+                      <div>
+                        <span x-text="metric"></span>
+                        →
+                        <strong x-text="value"></strong>
+                      </div>
+                    </template>
+                  </td>
                 </tr>
               </template>
             </tbody>
