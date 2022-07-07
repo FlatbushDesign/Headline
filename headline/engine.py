@@ -90,7 +90,7 @@ async def get_daily_data(
     elif date__lt:
         where["date"] = {"$lt": date__lt}
 
-    cursor = get_collection("daily_data").find(where)
+    cursor = get_collection("daily_data").find(where).sort("date", -1)
 
     try:
         return await cursor.to_list(100)
