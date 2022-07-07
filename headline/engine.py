@@ -45,7 +45,7 @@ async def run(user: User = Depends(current_active_user)):
     return {"status": "ok"}
 
 
-@api.post("/run/all")
+@api.get("/run/all")
 async def run_all(x_appengine_cron: Union[str, None] = Header(default="false")):
     if x_appengine_cron != "true":
         raise HTTPException(401, "This endpoint can only be called by cron")
