@@ -1,7 +1,6 @@
-// Prod:
-// const API_BASE_URL = 'https://headline-352617.ue.r.appspot.com'
-// Dev:
-const API_BASE_URL = 'http://localhost:8000'
+const API_BASE_URL = ['localhost', '127.0.0.1'].includes(location.hostname)
+  ? 'http://localhost:8000'
+  : 'https://headline-352617.ue.r.appspot.com'
 
 const ALL_PROVIDERS = [
   {
