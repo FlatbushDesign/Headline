@@ -40,8 +40,8 @@ app.add_middleware(
     ],
 )
 
-app.mount("/oauth2", oauth2_app)
-app.mount("/engine", engine_app)
+app.include_router(oauth2_app)
+app.include_router(engine_app)
 
 app.include_router(
     fastapi_users.get_auth_router(auth_backend), prefix="/auth/jwt", tags=["auth"]

@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import List, Union
 
-from fastapi import Depends, FastAPI, HTTPException, Header
+from fastapi import APIRouter, Depends, HTTPException, Header
 import pytz
 
 from headline.db import get_collection
@@ -11,7 +11,7 @@ from headline.providers_repository import get_provider
 from headline.users import current_active_user
 
 
-api = FastAPI()
+api = APIRouter(prefix="/engine", tags=["engine"])
 
 
 async def _run_subscription(subscription: ProviderSubscription):
@@ -53,6 +53,7 @@ async def _run_subscription(subscription: ProviderSubscription):
         {
             "$set": data.dict(exclude={"created_at"}),
         },
+        upsert=True,
     )
 
 
@@ -70,6 +71,11 @@ async def run(user: User = Depends(current_active_user)):
 async def run_all(x_appengine_cron: Union[str, None] = Header(default="false")):
     if x_appengine_cron != "true":
         raise HTTPException(401, "This endpoint can only be called by cron")
+
+    now = datetime.now(pytz.utc)
+    concerned_timezones = [
+        tz for tz in pytz.all_timezones if now.astimezone(pytz.timezone(tz)).hour == 18
+    ]
 
     subscriptions = get_collection("subscriptions").find()
 

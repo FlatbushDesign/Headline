@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from urllib.parse import urlencode
 
 from bson import ObjectId
-from fastapi import Depends, FastAPI, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import RedirectResponse
 import httpx
 from pydantic import BaseModel
@@ -16,7 +16,7 @@ from headline.providers_repository import get_credentials, get_providers_for_cre
 from headline.users import current_active_user
 
 
-api = FastAPI()
+api = APIRouter(prefix="/oauth2")
 
 
 class OAuthState(BaseModel):
