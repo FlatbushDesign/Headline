@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 from typing import Literal
+from dotenv import load_dotenv
 
 from pydantic import BaseSettings, AnyUrl
 
@@ -39,3 +40,7 @@ for file in env_files:
 
 print(f"Loading config from {env_file}")
 settings = Settings(_env_file=env_file)
+
+# Load the .env file in anycase as it's needed by OAuth2 credentials
+if env_file.exists():
+    load_dotenv(env_file)
