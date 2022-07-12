@@ -26,6 +26,10 @@ class SlackCredentials(Credentials):
         "channels:history",
         "im:read",
         "im:history",
+        "groups:history",
+        "groups:read",
+        "mpim:read",
+        "mpim:history",
     ]
 
     async def get_user_info(self, credentials: dict):
