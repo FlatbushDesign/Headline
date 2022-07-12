@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
+from headline.helpers.events import Event, count_back_to_back_events
 
 from headline.provider import Provider
 
@@ -57,18 +58,24 @@ class GoogleCalendar(Provider):
     def _get_calendars_events(
         self, time_min: datetime, time_max: datetime, calendars: List[str] = None
     ):
-        events_result = (
-            self.service.events()
-            .list(
-                calendarId=calendars[0],
-                timeMin=_datetime_to_iso(time_min),
-                timeMax=_datetime_to_iso(time_max),
-                singleEvents=True,
-                orderBy="startTime",
+        events = []
+
+        for calendar in calendars:
+            response = (
+                self.service.events()
+                .list(
+                    calendarId=calendar,
+                    timeMin=_datetime_to_iso(time_min),
+                    timeMax=_datetime_to_iso(time_max),
+                    singleEvents=True,
+                    orderBy="startTime",
+                )
+                .execute()
             )
-            .execute()
-        )
-        return events_result.get("items", [])
+
+            events.extend(response.get("items", []))
+
+        return events
 
     async def run(self, data: dict, user_credentials: dict):
         self.service = build(
@@ -89,6 +96,7 @@ class GoogleCalendar(Provider):
                 "meetings_duration_total": 0,
                 "meetings_recurrent_count": 0,
                 "meetings_count": 0,
+                "meetings_b2b_count": 0,
                 "most_met": [],
                 "busy_time_tomorrow": busy_time_tomorrow,
             }
@@ -134,6 +142,20 @@ class GoogleCalendar(Provider):
 
             result["most_met"] = sorted(
                 attendees_met_count.items(), key=lambda item: item[1], reverse=True
+            )
+
+            result["meetings_b2b_count"] = count_back_to_back_events(
+                [
+                    Event(
+                        start=_parse_iso_datetime(
+                            event["start"].get("dateTime", event["start"].get("date"))
+                        ),
+                        end=_parse_iso_datetime(
+                            event["end"].get("dateTime", event["end"].get("date"))
+                        ),
+                    )
+                    for event in events
+                ]
             )
 
             return result
