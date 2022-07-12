@@ -79,8 +79,13 @@ async def run_all(x_appengine_cron: Union[str, None] = Header(default="false")):
 
     subscriptions = get_collection("subscriptions").find()
 
-    async for subscription in subscriptions:
-        await _run_subscription(ProviderSubscription(**subscription))
+    async for subscription_data in subscriptions:
+        subscription = ProviderSubscription(**subscription_data)
+
+        try:
+            await _run_subscription(subscription)
+        except Exception as exc:
+            print(f"Error running subscription {subscription.id}", exc)
 
     return {"status": "ok"}
 

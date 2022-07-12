@@ -101,8 +101,7 @@ async def refresh_auth_token(
     token_data: dict = response.json()
 
     if response.is_error or "error" in token_data:
-        print("Error refreshing token", response, response.content)
-        raise HTTPException(400, token_data)
+        raise Exception(f"Error refreshing {credentials.name} OAuth2 token", token_data)
 
     (user_credentials[token_path] if token_path else user_credentials).update(
         {
