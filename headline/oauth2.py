@@ -8,7 +8,7 @@ from fastapi.responses import RedirectResponse
 import httpx
 from pydantic import BaseModel
 
-import headline.config as config
+from headline.config import settings
 from headline.db import get_collection
 from headline.models import User
 from headline.provider import Credentials, Provider
@@ -44,7 +44,7 @@ def _get_redirect_uri(credentials: Credentials):
     Returns:
         str: the redirect URI
     """
-    return f"{config.SERVER_URL}/oauth2/redirect/{credentials.name}"
+    return f"{settings.backend_url}/oauth2/redirect/{credentials.name}"
 
 
 def _get_user_authorize_url(credentials: Credentials, state: OAuthState):
@@ -227,4 +227,4 @@ async def oauth2_redirect(provider: str, code: str, state: str = None):
         ]
     )
 
-    return config.FRONT_END_BASE_URL
+    return settings.frontend_url

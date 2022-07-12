@@ -12,7 +12,7 @@ from fastapi_users.authentication import (
 )
 from fastapi_users.db import BeanieUserDatabase, ObjectIDIDMixin
 from httpx_oauth.clients.google import GoogleOAuth2
-from headline.config import FRONT_END_BASE_URL
+from headline.config import settings
 
 from headline.db import get_user_db
 from headline.models import User
@@ -54,7 +54,7 @@ class AutoRedirectCookieTransport(CookieTransport):
     async def get_login_response(self, user, response):
         await super().get_login_response(user, response)
         response.status_code = status.HTTP_302_FOUND
-        response.headers["Location"] = FRONT_END_BASE_URL
+        response.headers["Location"] = settings.frontend_url
 
 
 def get_jwt_strategy() -> JWTStrategy:

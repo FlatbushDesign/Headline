@@ -21,3 +21,6 @@ __pycache__/
 .venv
 data/
 tests/
+
+# Local .env config file
+.local.env

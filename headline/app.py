@@ -3,7 +3,7 @@ from fastapi import Depends, FastAPI, HTTPException, Response
 from fastapi.middleware.cors import CORSMiddleware
 from pymongo.results import DeleteResult
 
-from headline.config import FRONT_END_BASE_URL, SERVER_URL
+from headline.config import settings
 from headline.db import connect_db, get_collection
 from headline.models import ProviderSubscription, User, UserCredentials
 from headline.oauth2 import api as oauth2_app
@@ -23,8 +23,8 @@ db = connect_db()
 app = FastAPI()
 
 origins = [
-    SERVER_URL,
-    FRONT_END_BASE_URL,
+    settings.backend_url,
+    settings.frontend_url,
 ]
 
 app.add_middleware(

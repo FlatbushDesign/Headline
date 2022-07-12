@@ -1,6 +1,8 @@
 runtime: python310
 
 env_variables:
-  ENV: production
+  ENVIRONMENT: production
+  BACKEND_URL: https://headline-352617.ue.r.appspot.com
+  FRONTEND_URL: https://headline-352617.web.app
 
 entrypoint: uvicorn --port $PORT --host 0.0.0.0  headline.app:app
