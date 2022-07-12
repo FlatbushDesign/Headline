@@ -1,5 +1,5 @@
 cron:
   - description: "Run daily subscriptions"
     url: /engine/run/all
-    schedule: every mon,tue,wed,thu,fri 18:00
+    schedule: every day 18:00
     timezone: America/New_York
