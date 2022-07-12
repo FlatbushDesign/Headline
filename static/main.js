@@ -18,11 +18,6 @@ const ALL_PROVIDERS = [
     name: "GMail",
     credentials: "google"
   },
-  {
-    id: "zoom",
-    name: "Zoom",
-    credentials: "zoom"
-  }
 ]
 
 const getLocalDateIsoString = () => {
