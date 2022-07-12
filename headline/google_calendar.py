@@ -1,5 +1,5 @@
 from operator import itemgetter
-from typing import List
+from typing import Dict, List
 from datetime import datetime, timedelta
 
 from google.oauth2.credentials import Credentials
@@ -97,7 +97,8 @@ class GoogleCalendar(Provider):
             time_max = datetime.today()
             events = self._get_calendars_events(time_min, time_max, calendars)
 
-            attendees_met_count = {}
+            # Associate email addresses and met count
+            attendees_met_count: Dict[str, int] = {}
 
             for event in events:
                 start = _parse_iso_datetime(
